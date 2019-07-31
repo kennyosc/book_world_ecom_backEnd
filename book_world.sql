@@ -7,10 +7,10 @@ use book_world_db;
 CREATE TABLE users (
     id INT PRIMARY KEY AUTO_INCREMENT,
     first_name VARCHAR(255) NOT NULL,
-    last_name VARCHAR(255) NOT NULL,
+    last_name VARCHAR(255),
     username VARCHAR(255) NOT NULL UNIQUE,
     email VARCHAR(255) NOT NULL UNIQUE,
-    sex ENUM('Pria', 'Wanita') NOT NULL,
+    gender ENUM('Male', 'Female') NOT NULL,
     phone_number VARCHAR(255),
     password VARCHAR(255) NOT NULL,
     avatar VARCHAR(255),
@@ -102,6 +102,7 @@ CREATE TABLE order_details (
     id INT PRIMARY KEY AUTO_INCREMENT,
     order_id INT NOT NULL,
     product_id INT NOT NULL,
+    sub_total INT NOT NULL,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
     CONSTRAINT FK_details_orderId FOREIGN KEY (order_id)
@@ -133,6 +134,8 @@ CREATE TABLE wishlist (
     CONSTRAINT FK_wishlist_productId FOREIGN KEY (product_id)
         REFERENCES products (id)
 );
+
+select * from users;
 
 -- delivery_price(id, region, price)
 
