@@ -48,7 +48,7 @@ CREATE TABLE coupons (
 );
 
 
-CREATE TABLE admins (
+CREATE TABLE admins(
     id INT PRIMARY KEY AUTO_INCREMENT,
     username VARCHAR(255) NOT NULL UNIQUE,
     email VARCHAR(255) NOT NULL UNIQUE,
@@ -56,7 +56,7 @@ CREATE TABLE admins (
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW() ON UPDATE NOW()
 );
-
+SELECT * FROM admins
 -- CONNECTING TABLES
 -- ratings, reviews, orders, product_categories, coupons
 
@@ -136,6 +136,7 @@ CREATE TABLE wishlist (
 );
 
 select * from users;
+
 
 -- delivery_price(id, region, price)
 
