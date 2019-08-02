@@ -3,6 +3,8 @@ const conn = require('../connection/index.js')
 const bcrypt = require('bcrypt')
 const validator = require('validator')
 
+const mailVerify = require('../../nodemailer/verify_user.js')
+
 //==================================================
 //MODULE UNTUK IMAGE
 //upload avatar
@@ -119,6 +121,7 @@ router.post('/register',(req,res)=>{
                             if(err){
                                 return res.send(err)
                             }
+                            mailVerify(data)
                             res.send(results3)
                         })
                     }
@@ -127,6 +130,18 @@ router.post('/register',(req,res)=>{
         })
     }
    
+})
+
+//VERIFY EMAIL ROUTE
+router.get('/verify/:username',(req,res)=>{
+    const sql = `UPDATE users SET verified = true WHERE username='${req.params.username}'`
+
+    conn.query(sql, (err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send('Email Verified!')
+    })
 })
 
 //LOGIN ROUTE
@@ -141,14 +156,18 @@ router.post('/login', (req, res)=>{
             if(err){
                 return res.send(err)
             }
-    
-            bcrypt.compare(data.password, results[0].password).then((value)=>{
-                if(value === false){
-                    return res.send('Email/ Password Incorrect!')
-                }else{
-                    return res.send(results[0])
-                }
-            })
+            console.log(results)
+            if(results.length < 1){
+                return res.send('Email/ Password Incorrect')
+            }else{
+                bcrypt.compare(data.password, results[0].password).then((value)=>{
+                    if(value === false){
+                        return res.send('Email/ Password Incorrect!')
+                    }else{
+                        return res.send(results[0])
+                    }
+                })
+            }
         })
     }
     

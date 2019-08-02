@@ -22,16 +22,22 @@ const transporter = nodemailer.createTransport(
 )
 
 
-const mailVerify = (user) =>{
+const mailVerify = (data) =>{
 
-    var {name, username,email} = user
+    var {username,email} = data
 
     let mail = {
         from: 'Book World <kennyoscar95@gmail.com>',
         to: email,
-        subject: 'Email Verification - Book World',
-        html:`<h1>Hello ${name}</h1>
-        <a href="http://localhost:2019/verify?username=${username}"> Verifikasi Email </a>`
+        subject: '[BookWorld] Please verify your email adress',
+        html:`
+        <p>Almost done, <b>@${username}</b>! To complete your Book World sign up, we just need to verify your email address:</p>
+        <h3>${email}</h3>
+        <br>
+        <b><a href="http://localhost:2019/verify/${username}"> Verify Email </a></b>
+        <br>
+        <br>
+        <p>Once verified, you can start collecting all of the different books in Book World.</p>`
     }
 
     transporter.sendMail(mail, (err, results)=>{
