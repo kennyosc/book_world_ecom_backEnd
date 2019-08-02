@@ -20,7 +20,14 @@ const avatar_storage = multer.diskStorage(
             cb(null,avatarDir)
         },
         filename: function(req,file,cb){
-            cb(null, Date.now() + '_' + req.body.username + path.extname(file.originalname))
+            // console.log(file)
+            // { fieldname: 'avatar',
+            //     originalname: 'destiny_avatar2.jpg',
+            //     encoding: '7bit',
+            //     mimetype: 'image/jpeg' }
+
+            // console.log(path)
+            cb(null, Date.now() + '_' + file.fieldname + path.extname(file.originalname))
         }
     }
 )
@@ -85,7 +92,7 @@ router.post('/register',(req,res)=>{
     }
 
     //ubah password jadi hash
-    if(data.password < 8){
+    if(data.password.length < 8){
         return res.send('Password must be >= 8 words')
     } else{
         data.password = bcrypt.hashSync(data.password, 8)
@@ -167,8 +174,37 @@ router.patch('/updateprofile/:id', (req,res)=>{
 })
 
 //POST AVATAR TO USER
-router.patch('/updateavatar/:user_id', (err,results)=>{
-    const sql = `UPDATE users SET avatar = ${}`
+router.patch('/updateavatar/:user_id', upload_avatar.single('avatar'),(req,res)=>{
+    const sql = `UPDATE users SET avatar = '${req.file.filename}' WHERE id = ${req.params.user_id}`
+    console.log(req.file.filename)
+    console.log(req.body)
+
+    conn.query(sql, (err,results)=>{
+        if(err){
+            return res.send(123)
+        }
+
+        res.send(req.file.filename)
+    })
+
+})
+
+//READ AVATAR FROM USER
+router.get('/profile/avatar/:imagename', (req,res)=>{
+    //res.sendFile(path [, options] [, fn])
+
+    const options = {
+        root: avatarDir
+    }
+
+    const imagename = req.params.imagename
+
+    res.sendFile(imagename, options, (err)=>{
+        if(err){
+            return res.send(err)
+        }
+    })
+
 })
 
 module.exports = router

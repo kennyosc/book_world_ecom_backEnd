@@ -56,7 +56,8 @@ CREATE TABLE admins(
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW() ON UPDATE NOW()
 );
-SELECT * FROM admins
+SELECT * FROM admins;
+INSERT INTO admins(username,email,password) VALUES('kennyosc','kenny@gmail.com','password');
 -- CONNECTING TABLES
 -- ratings, reviews, orders, product_categories, coupons
 
