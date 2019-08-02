@@ -7,7 +7,7 @@ const validator = require('validator')
 //MODULE UNTUK IMAGE
 //upload avatar
 const path = require('path')
-const multer = requier('multer')
+const multer = require('multer')
 
 //photo directory
 const rootDir = path.join(__dirname,'../..')
@@ -148,18 +148,27 @@ router.post('/login', (req, res)=>{
 })
 
 //UPDATE PROFILE
-router.patch('/updateprofile/:username', (req,res)=>{
-    const data = [req.body, req.params.username ]
-    const sql = `UPDATE users SET ? WHERE username = ?`
+router.patch('/updateprofile/:id', (req,res)=>{
+    const data = [req.body, req.params.id ]
+    const sql = `UPDATE users SET ? WHERE id = ?`
 
     conn.query(sql,data, (err,results)=>{
         if(err){
             return res.send(err)
         }
-
-        const sql2 = `SELECT * FROM users WHERE username = ${req.params.username}`
-        res.send(results[0])
+        const sql2 = `SELECT * FROM users WHERE id = ${req.params.id}`
+        conn.query(sql2, (err,results2)=>{
+            if(err){
+                return res.send(err)
+            }
+            res.send(results2[0])
+        })
     })
+})
+
+//POST AVATAR TO USER
+router.patch('/updateavatar/:user_id', (err,results)=>{
+    const sql = `UPDATE users SET avatar = ${}`
 })
 
 module.exports = router
