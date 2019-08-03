@@ -173,7 +173,7 @@ router.post('/login', (req, res)=>{
     
 })
 
-//UPDATE PROFILE
+//UPDATE : PROFILE
 router.patch('/updateprofile/:id', (req,res)=>{
     const data = [req.body, req.params.id ]
     const sql = `UPDATE users SET ? WHERE id = ?`
@@ -192,7 +192,34 @@ router.patch('/updateprofile/:id', (req,res)=>{
     })
 })
 
-//POST AVATAR TO USER
+//UPDATE : CHANGE PASSWORD
+router.patch('/updatepassword/:id', (req,res)=>{
+    //apakah harus di cek dulu?
+    // kalau tidak check dulu bisa tidak?
+    const sql = `SELECT * FROM users WHERE id = ${req.params.id}`
+
+    conn.query(sql, (err,results)=>{
+        if(err){
+            return res.send('Password Incorrect')
+        }
+        const data = req.body
+        
+        const verifyPassword = bcrypt.compare(data.oldPassword,results[0].password)
+        const newPassword = bcrypt.hashSync(data.newPassword , 8)
+
+        if(verifyPassword){
+            const sql2 = `UPDATE users SET password = '${newPassword}' WHERE id = ${req.params.id}`
+            conn.query(sql2, (err,results)=>{
+                if(err){
+                    return res.send(err)
+                }
+                res.send('Password updated')
+            })
+        }
+    })
+})
+
+//POST : AVATAR TO SPECIFIED USER
 router.patch('/updateavatar/:user_id', upload_avatar.single('avatar'),(req,res)=>{
     const sql = `UPDATE users SET avatar = '${req.file.filename}' WHERE id = ${req.params.user_id}`
     console.log(req.file.filename)
@@ -208,7 +235,7 @@ router.patch('/updateavatar/:user_id', upload_avatar.single('avatar'),(req,res)=
 
 })
 
-//READ AVATAR FROM USER
+//READ : AVATAR FROM USER
 router.get('/profile/avatar/:imagename', (req,res)=>{
     //res.sendFile(path [, options] [, fn])
 
