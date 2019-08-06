@@ -113,27 +113,29 @@ CREATE TABLE orders (
 	order_recipient VARCHAR(255) NOT NULL,
     total INT NOT NULL,
     coupon_id INT,
+    payment_status BOOLEAN DEFAULT FALSE,
     order_status BOOLEAN DEFAULT FALSE,
     phone_number VARCHAR(255),
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
     CONSTRAINT FK_orders_userId FOREIGN KEY (user_id)
-        REFERENCES users (id),
+        REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT FK_orders_couponId FOREIGN KEY (coupon_id)
-        REFERENCES coupons (id)
+        REFERENCES coupons (id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE order_details (
     id INT PRIMARY KEY AUTO_INCREMENT,
     order_id INT NOT NULL,
     product_id INT NOT NULL,
+    quantity INT NOT NULL,
     sub_total INT NOT NULL,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
     CONSTRAINT FK_details_orderId FOREIGN KEY (order_id)
-        REFERENCES orders (id),
+        REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT FK_details_productId FOREIGN KEY (product_id)
-        REFERENCES products (id)
+        REFERENCES products (id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE product_categories (
@@ -143,11 +145,11 @@ CREATE TABLE product_categories (
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
     CONSTRAINT FK_category_productId FOREIGN KEY (product_id)
-        REFERENCES products (id),
+        REFERENCES products (id) ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT FK_category_categoryId FOREIGN KEY (category_id)
-        REFERENCES categories (id),
+        REFERENCES categories (id) ON DELETE CASCADE ON UPDATE CASCADE,
 	CONSTRAINT FK_category_genreId FOREIGN KEY (genre_id)
-        REFERENCES genres(id),
+        REFERENCES genres(id) ON DELETE CASCADE ON UPDATE CASCADE,
     PRIMARY KEY (product_id , category_id, genre_id)
 );
 
@@ -158,9 +160,9 @@ CREATE TABLE wishlist (
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
     CONSTRAINT FK_wishlist_userId FOREIGN KEY (user_id)
-        REFERENCES users (id),
+        REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT FK_wishlist_productId FOREIGN KEY (product_id)
-        REFERENCES products (id)
+        REFERENCES products (id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 select * from products;

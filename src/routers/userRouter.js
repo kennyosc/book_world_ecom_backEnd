@@ -121,7 +121,7 @@ router.post('/register',(req,res)=>{
                             if(err){
                                 return res.send(err)
                             }
-                            mailVerify(data)
+                            // mailVerify(data)
                             res.send(results3)
                         })
                     }

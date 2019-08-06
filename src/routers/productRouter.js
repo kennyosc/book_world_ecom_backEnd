@@ -38,8 +38,10 @@ const upload_productImage = multer(
 
 
 //=======================================
-//ORDER TAMBAHIN PAYMENT_STATUS
-// MANAGE PRODUCTS TAMBAHIN STATUS ('LIVE'/ 'OUT OF STOCK')
+//ORDER TAMBAHIN PAYMENT_STATUS // DONE
+// ORDER_DETAILS TAMBAHIN QTY // DONE
+// MANAGE PRODUCTS TAMBAHIN STATUS ('LIVE'/ 'OUT OF STOCK') // NANTI RENDER DENGAN FRONT-END
+// TAMBAHIN RATING 4.5/5
 
 //GET PRODUCT CATEGORIES
 router.get('/productcategories', (req,res)=>{
@@ -119,21 +121,9 @@ router.get('/allproducts', (req,res)=>{
     })
 })
 
-//GET PRODUCT PER ID
-router.get('/product/:product_id',(req,res)=>{
-    const sql = `SELECT * FROM products WHERE id = ${req.params.product_id}`
-
-    conn.query(sql,(err,results)=>{
-        if(err){
-            return res.send(err)
-        }
-        res.send(results[0])
-    })
-})
-
 //GET PRODUCT_CATEGORY PER ID
 router.get('/productcategory/:product_id',(req,res)=>{
-    const sql = `select products.name,categories.category,genres.genre from product_categories
+    const sql = `select * from product_categories
     inner join products
         ON product_categories.product_id = products.id
     inner join categories
@@ -150,6 +140,17 @@ router.get('/productcategory/:product_id',(req,res)=>{
     })
 })
 
+//DELETE PRODUCT BY ID
+router.delete('/deleteproduct/:product_id',(req,res)=>{
+    const sql = `DELETE FROM products WHERE id = ${req.params.product_id}`
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results)
+    })
+})
+
 //POST NEW CATEGORY
 router.post('/addcategory', (req,res)=>{
     const sql = `INSERT INTO categories SET ?`
@@ -163,6 +164,17 @@ router.post('/addcategory', (req,res)=>{
     })
 })
 
+//DELETE CATEGORY BY ID
+router.delete('/deletecategory/:category_id',(req,res)=>{
+    const sql = `DELETE FROM categories WHERE id = ${req.params.category_id}`
+
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results)
+    })
+})
 
 //POST NEW GENRE
 router.post('/addgenre', (req,res)=>{
@@ -176,5 +188,20 @@ router.post('/addgenre', (req,res)=>{
         res.send(results)
     })
 })
+
+//DELETE genre BY ID
+router.delete('/deletegenre/:genre_id',(req,res)=>{
+    const sql = `DELETE FROM genres WHERE id = ${req.params.genre_id}`
+
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results)
+    })
+})
+
+// EDIT PRODUCT BY ID
+
 
 module.exports = router
