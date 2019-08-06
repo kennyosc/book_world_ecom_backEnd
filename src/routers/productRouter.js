@@ -38,7 +38,8 @@ const upload_productImage = multer(
 
 
 //=======================================
-
+//ORDER TAMBAHIN PAYMENT_STATUS
+// MANAGE PRODUCTS TAMBAHIN STATUS ('LIVE'/ 'OUT OF STOCK')
 
 //GET PRODUCT CATEGORIES
 router.get('/productcategories', (req,res)=>{
@@ -51,6 +52,7 @@ router.get('/productcategories', (req,res)=>{
         res.send(results)
     })
 })
+
 
 //GET PRODUCT GENRES
 router.get('/productgenres',(req,res)=>{
@@ -89,7 +91,6 @@ router.post('/addproduct',upload_productImage.single('productImage'),(req,res)=>
         if(err){
             return res.send(err)
         }
-
         
         const product_category_data = 
         {
@@ -97,7 +98,6 @@ router.post('/addproduct',upload_productImage.single('productImage'),(req,res)=>
             category_id : data.category_id,
             genre_id: data.genre_id
         }
-    
         
         conn.query(sql2,product_category_data,(err,results)=>{
             if(err){
@@ -116,6 +116,37 @@ router.get('/allproducts', (req,res)=>{
             return res.send(err)
         }
         res.send(results)
+    })
+})
+
+//GET PRODUCT PER ID
+router.get('/product/:product_id',(req,res)=>{
+    const sql = `SELECT * FROM products WHERE id = ${req.params.product_id}`
+
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results[0])
+    })
+})
+
+//GET PRODUCT_CATEGORY PER ID
+router.get('/productcategory/:product_id',(req,res)=>{
+    const sql = `select products.name,categories.category,genres.genre from product_categories
+    inner join products
+        ON product_categories.product_id = products.id
+    inner join categories
+        on product_categories.category_id = categories.id
+    inner join genres
+        on 	product_categories.genre_id = genres.id
+        WHERE products.id = ${req.params.product_id}`
+
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results[0])
     })
 })
 
