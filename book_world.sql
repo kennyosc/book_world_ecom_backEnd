@@ -27,7 +27,8 @@ CREATE TABLE products (
     stock INT NOT NULL DEFAULT 1,
     photo VARCHAR(255) NOT NULL,
     weight DECIMAL(2 , 1 ) NOT NULL,
-    published DATE NOT NULL,
+    published YEAR(4) NOT NULL,
+    author VARCHAR(255),
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW() ON UPDATE NOW()
 );
@@ -38,6 +39,28 @@ CREATE TABLE categories (
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW() ON UPDATE NOW()
 );
+
+INSERT INTO categories(category) VALUES ('Fiction'),('Non-Fiction');
+
+select * from categories;
+
+CREATE TABLE genres(
+id INT AUTO_INCREMENT PRIMARY KEY,
+genre VARCHAR(255) NOT NULL unique,
+created_at TIMESTAMP DEFAULT NOW(),
+updated_at TIMESTAMP DEFAULT NOW() ON UPDATE NOW()
+);
+
+INSERT INTO genres(genre) VALUES 
+('Biography'),('Essay'),('Memoir'),('Narrative nonfiction'),('Periodicals'),('Reference books'),('Self-help'),('Speech'),('Textbook'),('Poetry'),
+('Art'),('Cookbook'),('Health'),('History'),('Religion'),('Science'),('Math'),('Travel'),
+('Action and adventure'),('Anthology'),('Classic'),('Comic and graphic novel'),('Crime and detective'),('Drama'),('Fable'),('Fairy tale'),('Fan-fiction'),
+('Fantasy'),('Historical fiction'),('Horror'),('Humor'),('Legend'),('Magical realism'),('Mystery'),('Mythology'),('Realistic fiction'),('Romance'),('Satire'),('Sci-fi'),
+('Short story'),('Thriller');
+
+select * from genres;
+select * from genres where genre like '%cookbook%';
+-- delete from genres;
 
 CREATE TABLE coupons (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -56,8 +79,9 @@ CREATE TABLE admins(
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW() ON UPDATE NOW()
 );
-SELECT * FROM admins;
+
 INSERT INTO admins(username,email,password) VALUES('kennyosc','kenny@gmail.com','password');
+SELECT * FROM admins;
 -- CONNECTING TABLES
 -- ratings, reviews, orders, product_categories, coupons
 
@@ -115,13 +139,16 @@ CREATE TABLE order_details (
 CREATE TABLE product_categories (
     product_id INT NOT NULL,
     category_id INT NOT NULL,
+    genre_id INT NOT NULL,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
     CONSTRAINT FK_category_productId FOREIGN KEY (product_id)
         REFERENCES products (id),
     CONSTRAINT FK_category_categoryId FOREIGN KEY (category_id)
         REFERENCES categories (id),
-    PRIMARY KEY (product_id , category_id)
+	CONSTRAINT FK_category_genreId FOREIGN KEY (genre_id)
+        REFERENCES genres(id),
+    PRIMARY KEY (product_id , category_id, genre_id)
 );
 
 CREATE TABLE wishlist (
@@ -136,7 +163,18 @@ CREATE TABLE wishlist (
         REFERENCES products (id)
 );
 
-select * from users;
+select * from products;
+select * from product_categories;
+
+select products.name,categories.category,genres.genre from product_categories
+inner join products
+	ON product_categories.product_id = products.id
+inner join categories
+	on product_categories.category_id = categories.id
+inner join genres
+	on 	product_categories.genre_id = genres.id;
+
+
 
 
 -- delivery_price(id, region, price)
