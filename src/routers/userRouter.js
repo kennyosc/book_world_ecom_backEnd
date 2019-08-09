@@ -2,6 +2,7 @@ const router = require('express').Router()
 const conn = require('../connection/index.js')
 const bcrypt = require('bcrypt')
 const validator = require('validator')
+const fs = require('fs')
 
 const mailVerify = require('../../nodemailer/verify_user.js')
 
@@ -133,14 +134,14 @@ router.post('/register',(req,res)=>{
 })
 
 //VERIFY EMAIL ROUTE
-router.get('/verify/:username',(req,res)=>{
-    const sql = `UPDATE users SET verified = true WHERE username='${req.params.username}'`
+router.get('/verify/:user_id',(req,res)=>{
+    const sql = `UPDATE users SET verified = true WHERE id='${req.params.user_id}'`
 
     conn.query(sql, (err,results)=>{
         if(err){
             return res.send(err)
         }
-        res.send('Email Verified!')
+        res.send('User Verified!')
     })
 })
 
@@ -155,6 +156,10 @@ router.post('/login', (req, res)=>{
         conn.query(sql, (err,results)=>{
             if(err){
                 return res.send(err)
+            }
+
+            if(!results){
+                return res.send('Please register first')
             }
             console.log(results)
             if(results.length < 1){
@@ -219,18 +224,32 @@ router.patch('/updatepassword/:id', (req,res)=>{
     })
 })
 
-//POST : AVATAR TO SPECIFIED USER
+//UPDATE : AVATAR TO SPECIFIED USER
 router.patch('/updateavatar/:user_id', upload_avatar.single('avatar'),(req,res)=>{
-    const sql = `UPDATE users SET avatar = '${req.file.filename}' WHERE id = ${req.params.user_id}`
-    console.log(req.file.filename)
-    console.log(req.body)
+    const sql = `SELECT avatar FROM users WHERE id = ${req.params.user_id}`
+    const sql2 = `UPDATE users SET avatar = '${req.file.filename}' WHERE id = ${req.params.user_id}`
 
-    conn.query(sql, (err,results)=>{
+    conn.query(sql,(err,results)=>{
         if(err){
-            return res.send(123)
+            return res.send(err)
         }
 
-        res.send(req.file.filename)
+        const imageName = results[0].avatar
+        const avatarPath = avatarDir + '/' + imageName
+
+        fs.unlink(avatarPath, (err)=>{
+            if(err){
+                return res.send(err)
+            }
+
+            conn.query(sql2, (err,results)=>{
+                if(err){
+                    return res.send(123)
+                }
+        
+                res.send(req.file.filename)
+            })
+        })
     })
 
 })

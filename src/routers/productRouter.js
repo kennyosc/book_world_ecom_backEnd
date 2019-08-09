@@ -1,5 +1,6 @@
 const router = require('express').Router()
 const conn = require('../connection/index.js')
+const fs = require('fs')
 
 //=======================================
 //MULTER PRODUCT IMAGE CONFIGURATION
@@ -201,7 +202,82 @@ router.delete('/deletegenre/:genre_id',(req,res)=>{
     })
 })
 
-// EDIT PRODUCT BY ID
+//READ IMAGE BY PRODUCT ID
+router.get('/geteditproductimage/:productimagename', (req,res)=>{
+    const options={
+        root: productImageDir
+    }
+
+    const productImageName = req.params.productimagename
+
+    res.sendFile(productImageName, options, (err)=>{
+        if(err){
+            return res.send(err)
+        }
+    })
+})
+
+// EDIT PRODUCT IMAGE BY ID
+router.patch('/editproductimage/:product_id',upload_productImage.single('productImage'),(req,res)=>{
+    const sql = `SELECT photo FROM products WHERE id = ${req.params.product_id}`
+    const sql2 = `UPDATE products SET photo = '${req.file.filename}' WHERE id = ${req.params.product_id}`
+
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        
+        const productImageName = results[0].photo
+        const productImgPath = productImageDir + '/' + productImageName
+
+        fs.unlink(productImgPath, (err)=>{
+            if(err){
+                return res.send(err)
+            }
+
+            conn.query(sql2,(err,results)=>{
+                if(err){
+                    return res.send(err)
+                }
+                return res.send(results)
+            })
+        })
+    })
+})
+
+//EDIT PRODUCT PER PRODUCT ID
+router.patch('/editproduct/:product_id', (req,res)=>{
+    const sql = `UPDATE products SET ? WHERE id = ${req.params.product_id}`
+    const sql2 = `UPDATE product_categories SET ? WHERE product_id = ${req.params.product_id}`
+    const data = req.body
+
+    const productData = {
+        name: data.name,
+        description: data.description,
+        price: data.price,
+        stock: data.stock,
+        weight: data.weight,
+        published: data.published,
+        author:data.author
+    }
+
+    conn.query(sql,productData,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+
+        const productCategoriesData = {
+            category_id : data.category_id,
+            genre_id : data.genre_id
+        }
+        conn.query(sql2, productCategoriesData, (err,results)=>{
+            if(err){
+                return res.send(err)
+            }
+            res.send(results)
+        })
+    })
+})
 
 
 module.exports = router

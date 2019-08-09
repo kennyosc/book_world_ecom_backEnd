@@ -15,9 +15,12 @@ CREATE TABLE users (
     password VARCHAR(255) NOT NULL,
     avatar VARCHAR(255),
     verified BOOLEAN DEFAULT FALSE,
+    suspended BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW() ON UPDATE NOW()
 );
+
+SELECT * FROM users;
 
 CREATE TABLE products (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -32,6 +35,8 @@ CREATE TABLE products (
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW() ON UPDATE NOW()
 );
+
+select * from products;
 
 CREATE TABLE categories (
     id INT PRIMARY KEY AUTO_INCREMENT,

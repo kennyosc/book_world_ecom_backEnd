@@ -24,7 +24,7 @@ const transporter = nodemailer.createTransport(
 
 const mailVerify = (data) =>{
 
-    var {username,email} = data
+    var {id,username,email} = data
 
     let mail = {
         from: 'Book World <kennyoscar95@gmail.com>',
@@ -34,7 +34,7 @@ const mailVerify = (data) =>{
         <p>Almost done, <b>@${username}</b>! To complete your Book World sign up, we just need to verify your email address:</p>
         <h3>${email}</h3>
         <br>
-        <b><a href="http://localhost:2019/verify/${username}"> Verify Email </a></b>
+        <b><a href="http://localhost:2019/verify/${id}"> Verify Email </a></b>
         <br>
         <br>
         <p>Once verified, you can start collecting all of the different books in Book World.</p>`
