@@ -1,6 +1,7 @@
 const router = require('express').Router()
 const conn = require('../connection/index.js')
 const fs = require('fs')
+const sharp = require('sharp')
 
 //=======================================
 //MULTER PRODUCT IMAGE CONFIGURATION
@@ -122,6 +123,17 @@ router.get('/allproducts', (req,res)=>{
     })
 })
 
+//GET 5 PRODUCTS FOR NEW BOOKS
+router.get('/newproducts',(req,res)=>{
+    const sql = `SELECT * FROM products ORDER BY created_at DESC LIMIT 5`
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results)
+    })
+})
+
 //GET PRODUCT_CATEGORY PER ID
 router.get('/productcategory/:product_id',(req,res)=>{
     const sql = `select * from product_categories
@@ -143,12 +155,31 @@ router.get('/productcategory/:product_id',(req,res)=>{
 
 //DELETE PRODUCT BY ID
 router.delete('/deleteproduct/:product_id',(req,res)=>{
-    const sql = `DELETE FROM products WHERE id = ${req.params.product_id}`
+    const sql = `SELECT photo FROM products WHERE id = ${req.params.product_id}`
+    const sql2 = `DELETE FROM products WHERE id = ${req.params.product_id}`
+
     conn.query(sql,(err,results)=>{
         if(err){
             return res.send(err)
         }
-        res.send(results)
+
+        const productImageName = results[0].photo
+        const productImagePath = productImageDir + '/' + productImageName
+
+        if(results[0].photo){
+            fs.unlink(productImagePath, (err)=>{
+                if(err){
+                    return res.send(err)
+                }
+            })
+        }
+
+        conn.query(sql2, (err,results)=>{
+            if(err){
+                return res.send(err)
+            }
+            res.send(results)
+        })
     })
 })
 
@@ -220,28 +251,37 @@ router.get('/geteditproductimage/:productimagename', (req,res)=>{
 // EDIT PRODUCT IMAGE BY ID
 router.patch('/editproductimage/:product_id',upload_productImage.single('productImage'),(req,res)=>{
     const sql = `SELECT photo FROM products WHERE id = ${req.params.product_id}`
-    const sql2 = `UPDATE products SET photo = '${req.file.filename}' WHERE id = ${req.params.product_id}`
 
     conn.query(sql,(err,results)=>{
         if(err){
-            return res.send(err)
+            return res.send({
+                status:'error1',
+                content: err})
         }
         
         const productImageName = results[0].photo
         const productImgPath = productImageDir + '/' + productImageName
 
-        fs.unlink(productImgPath, (err)=>{
-            if(err){
-                return res.send(err)
-            }
+        // fs.unlink(productImgPath, (err)=>{
+        //     if(err){
+        //         return res.send(err)
+        //     }
 
-            conn.query(sql2,(err,results)=>{
-                if(err){
-                    return res.send(err)
-                }
-                return res.send(results)
-            })
-        })
+            // sharp(req.file.buffer).resize({width:180,height:180}).png().then(photo=>{
+            //     const sql2 = `UPDATE products SET photo = '${photo}' WHERE id = ${req.params.product_id}`
+                
+                // conn.query(sql2,(err,results)=>{
+                //     if(err){
+                //         return res.send({
+                //             status:'error2',
+                //             content: err})
+                //     }
+                //     return res.send(results)
+                // })
+            // })
+        // })
+        const hasil = sharp(req.file.buffer).metadata()
+        res.send(hasil)
     })
 })
 

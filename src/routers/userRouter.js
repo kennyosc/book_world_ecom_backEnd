@@ -237,19 +237,23 @@ router.patch('/updateavatar/:user_id', upload_avatar.single('avatar'),(req,res)=
         const imageName = results[0].avatar
         const avatarPath = avatarDir + '/' + imageName
 
-        fs.unlink(avatarPath, (err)=>{
-            if(err){
-                return res.send(err)
-            }
-
-            conn.query(sql2, (err,results)=>{
+        if(results[0].avatar){
+            fs.unlink(avatarPath, (err)=>{
                 if(err){
-                    return res.send(123)
+                    return res.send(err)
                 }
-        
-                res.send(req.file.filename)
+
             })
+        }
+
+        conn.query(sql2, (err,results)=>{
+            if(err){
+                return res.send(123)
+            }
+    
+            res.send(req.file.filename)
         })
+        
     })
 
 })
