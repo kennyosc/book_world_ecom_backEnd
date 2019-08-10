@@ -153,6 +153,17 @@ router.get('/productcategory/:product_id',(req,res)=>{
     })
 })
 
+//GET PRODUCTS PER ID
+router.get('/productdetails/:product_id',(req,res)=>{
+    const sql = `SELECT * FROM products WHERE id = ${req.params.product_id}`
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results[0])
+    })
+})
+
 //DELETE PRODUCT BY ID
 router.delete('/deleteproduct/:product_id',(req,res)=>{
     const sql = `SELECT photo FROM products WHERE id = ${req.params.product_id}`
@@ -262,27 +273,24 @@ router.patch('/editproductimage/:product_id',upload_productImage.single('product
         const productImageName = results[0].photo
         const productImgPath = productImageDir + '/' + productImageName
 
-        // fs.unlink(productImgPath, (err)=>{
-        //     if(err){
-        //         return res.send(err)
-        //     }
+        
+        fs.unlink(productImgPath, (err)=>{
+            if(err){
+                return res.send(err)
+            }
+        })
 
-            // sharp(req.file.buffer).resize({width:180,height:180}).png().then(photo=>{
-            //     const sql2 = `UPDATE products SET photo = '${photo}' WHERE id = ${req.params.product_id}`
+
+        const sql2 = `UPDATE products SET photo = '${req.file.filename}' WHERE id = ${req.params.product_id}`
                 
-                // conn.query(sql2,(err,results)=>{
-                //     if(err){
-                //         return res.send({
-                //             status:'error2',
-                //             content: err})
-                //     }
-                //     return res.send(results)
-                // })
-            // })
-        // })
-        const hasil = sharp(req.file.buffer).metadata()
-        res.send(hasil)
-    })
+            conn.query(sql2,(err,results)=>{
+                if(err){
+                    return res.send(err)
+                }
+                res.send(results)
+            })
+        }
+    )
 })
 
 //EDIT PRODUCT PER PRODUCT ID
@@ -318,6 +326,44 @@ router.patch('/editproduct/:product_id', (req,res)=>{
         })
     })
 })
+
+//GET 1 product SPECIFIC WISHLIST for knowing if this product is wishlisted or not
+router.get('/productwishlist/:user_id/:product_id',(req,res)=>{
+    const sql = `SELECT * FROM wishlist WHERE user_id = ${req.params.user_id} AND product_id = ${req.params.product_id}`
+
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results[0])
+    })
+})
+
+//POST 1 PRODUCT TO WISHLIST
+router.post('/addwishlist', (req,res)=>{
+    const sql = `INSERT INTO wishlist SET ?`
+    const data = req.body
+
+    conn.query(sql,data,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results)
+    })
+})
+
+//DELETE 1 PRODUCT FROM WISHLIST
+router.delete('/deletewishlist/:user_id/:product_id',(req,res)=>{
+    const sql = `DELETE FROM wishlist WHERE user_id =${req.params.user_id} AND product_id = ${req.params.product_id}`
+
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results)
+    })
+})
+
 
 
 module.exports = router

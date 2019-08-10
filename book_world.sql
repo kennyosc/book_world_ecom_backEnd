@@ -159,7 +159,6 @@ CREATE TABLE product_categories (
 );
 
 CREATE TABLE wishlist (
-    id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
     product_id INT NOT NULL,
     created_at TIMESTAMP DEFAULT NOW(),
@@ -167,8 +166,11 @@ CREATE TABLE wishlist (
     CONSTRAINT FK_wishlist_userId FOREIGN KEY (user_id)
         REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT FK_wishlist_productId FOREIGN KEY (product_id)
-        REFERENCES products (id) ON DELETE CASCADE ON UPDATE CASCADE
+        REFERENCES products (id) ON DELETE CASCADE ON UPDATE CASCADE,
+	primary key(user_id,product_id)
 );
+
+select * from wishlist;
 
 select * from products;
 select * from product_categories;
