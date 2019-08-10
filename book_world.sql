@@ -116,11 +116,12 @@ CREATE TABLE orders (
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
 	order_recipient VARCHAR(255) NOT NULL,
+    phone_number VARCHAR(255),
     total INT NOT NULL,
     coupon_id INT,
     payment_status BOOLEAN DEFAULT FALSE,
     order_status BOOLEAN DEFAULT FALSE,
-    phone_number VARCHAR(255),
+    checkout_status BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
     CONSTRAINT FK_orders_userId FOREIGN KEY (user_id)
@@ -131,7 +132,8 @@ CREATE TABLE orders (
 
 CREATE TABLE order_details (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    order_id INT NOT NULL,
+    order_id INT,
+    user_id INT NOT NULL,
     product_id INT NOT NULL,
     quantity INT NOT NULL,
     sub_total INT NOT NULL,
@@ -140,8 +142,13 @@ CREATE TABLE order_details (
     CONSTRAINT FK_details_orderId FOREIGN KEY (order_id)
         REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT FK_details_productId FOREIGN KEY (product_id)
-        REFERENCES products (id) ON DELETE CASCADE ON UPDATE CASCADE
+        REFERENCES products (id) ON DELETE CASCADE ON UPDATE CASCADE,
+	CONSTRAINT FK_details_userId FOREIGN KEY (user_id)
+        REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE
 );
+
+SELECT * FROM orders;
+SELECT * from order_details;
 
 CREATE TABLE product_categories (
     product_id INT NOT NULL,
@@ -157,6 +164,8 @@ CREATE TABLE product_categories (
         REFERENCES genres(id) ON DELETE CASCADE ON UPDATE CASCADE,
     PRIMARY KEY (product_id , category_id, genre_id)
 );
+
+
 
 CREATE TABLE wishlist (
     user_id INT NOT NULL,
