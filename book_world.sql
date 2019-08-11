@@ -152,6 +152,8 @@ SELECT * from order_details;
 SELECT * FROM order_details WHERE order_id IS NULL;
 select quantity from order_details;
 
+select sum(sub_total) as totalOrder from order_details WHERE user_id = 2;
+
 CREATE TABLE product_categories (
     product_id INT NOT NULL,
     category_id INT NOT NULL,
