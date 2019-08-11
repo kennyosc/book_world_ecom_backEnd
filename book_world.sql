@@ -149,6 +149,8 @@ CREATE TABLE order_details (
 
 SELECT * FROM orders;
 SELECT * from order_details;
+SELECT * FROM order_details WHERE order_id IS NULL;
+select quantity from order_details;
 
 CREATE TABLE product_categories (
     product_id INT NOT NULL,
