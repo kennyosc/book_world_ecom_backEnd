@@ -114,7 +114,116 @@ router.post('/handleaddtocart',(req,res)=>{
 
 //DELETE FROM CART
 router.delete('/deletefromcart/:user_id/:product_id',(req,res)=>{
-    const sql = `DELETE FROM order`
+    //DELETE FROM CART BY USER AND PRODUCT ID
+    const sql = `DELETE FROM order_details WHERE user_id = ${req.params.user_id} AND product_id = ${req.params.product_id}`
+
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results)
+    })
+})
+
+//WHEN USER USES COUPON
+router.post('/usecoupon',(req,res)=>{
+    const data = req.body
+    const sql3 = `SELECT user_id, coupon_code,count(*) as total_used, coupon_limit FROM coupons
+        INNER JOIN used_coupons
+            ON coupons.id = used_coupons.coupon_id
+        GROUP BY used_coupons.user_id
+        HAVING coupons.coupon_code = '${req.body.coupon_code}' AND user_id = ${data.user_id}`
+
+    conn.query(sql3,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+
+        //kalau belum pakai sama sekali, maka post
+        if(!results[0]){
+            const sql = `SELECT * FROM coupons WHERE coupon_code = '${req.body.coupon_code}'`
+                conn.query(sql,(err,results2)=>{
+                    if(err){
+                        return res.send(err)
+                    }
+                    
+                    if(!results2[0]){
+                        return res.send('Coupon not found')
+                    }
+                    const sql2 = `INSERT INTO used_coupons SET ?`
+            
+                    const coupon_data = {
+                        user_id : data.user_id,
+                        coupon_id : results2[0].id
+                    }
+            
+                    conn.query(sql2,coupon_data,(err,results3)=>{
+                        if(err){
+                            return res.send(err)
+                        }
+                        res.send(results3)
+                    })
+                })
+        }else{
+            //kalau ada
+            //cek apakah user tersebut sudah melebihi limit atau belum
+            if(results[0].total_used === results[0].coupon_limit){
+                return res.send('Coupon have reached its limit')
+            }else{
+
+                //jika belum maka masukin ke used_coupons
+                const sql = `SELECT * FROM coupons WHERE coupon_code = '${req.body.coupon_code}'`
+                conn.query(sql,(err,results2)=>{
+                    if(err){
+                        return res.send(err)
+                    }
+                    
+                    const sql2 = `INSERT INTO used_coupons SET ?`
+            
+                    const coupon_data = {
+                        user_id : data.user_id,
+                        coupon_id : results2[0].id
+                    }
+            
+                    conn.query(sql2,coupon_data,(err,results3)=>{
+                        if(err){
+                            return res.send(err)
+                        }
+                        res.send(results3)
+                    })
+                })
+            }
+        }
+        
+    })
+
+})
+
+//GET COUPONS VALUE
+router.post('/getcouponvalue',(req,res)=>{
+    const sql = `SELECT * FROM coupons
+    INNER JOIN used_coupons
+        on used_coupons.coupon_id = coupons.id 
+    WHERE user_id = '${req.body.user_id}' AND used_coupons.order_id IS NULL`
+
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results[0])
+    })
+})
+
+//REMOVE COUPON FROM USER
+router.delete('/deleteusecoupon/:coupon_id/:user_id',(req,res)=>{
+    const sql = `DELETE FROM used_coupons WHERE coupon_id = ${req.params.coupon_id} AND user_id = ${req.params.user_id} AND order_id IS NULL`
+
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results)
+    })
 })
 
 module.exports = router
