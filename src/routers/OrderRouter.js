@@ -1,7 +1,9 @@
 const router = require('express').Router()
 const conn = require('../connection/index.js')
 
-//GET IF USER HAVE ALREADY ORDERED OR NOT
+//=============CART===============
+
+//GET CART BY USER_ID
 router.get('/getusercart/:user_id',(req,res)=>{
     const sql = `SELECT * FROM order_details 
     JOIN products
@@ -92,10 +94,10 @@ router.post('/handleaddtocart',(req,res)=>{
                         return res.send(`Stock remaining : ${results[0].stock}`)
                     }else{
 
-                        // DAN UPDATE QUANTITY YANG SUDAH DIPESAN BERDASARKAN USER
+                        // DAN UPDATE QUANTITY YANG SUDAH DIPESAN BERDASARKAN USER DAN ORDER_ID IS NULL (KARENA BELUM CHECKOUT)
                         var updateQty = results1[0].quantity + data.quantity
                         var updateSubTotal = results1[0].sub_total + data.sub_total
-                        const sql5 = `UPDATE order_details SET quantity = ${updateQty}, sub_total=${updateSubTotal} WHERE product_id = ${data.product_id} AND user_id = ${data.user_id}`
+                        const sql5 = `UPDATE order_details SET quantity = ${updateQty}, sub_total=${updateSubTotal} WHERE product_id = ${data.product_id} AND user_id = ${data.user_id} AND order_id IS NULL`
 
                         conn.query(sql5,(err,results3)=>{
                             if(err){
@@ -125,6 +127,8 @@ router.delete('/deletefromcart/:user_id/:product_id',(req,res)=>{
     })
 })
 
+//=============COUPONS===============
+
 //WHEN USER USES COUPON
 router.post('/usecoupon',(req,res)=>{
     const data = req.body
@@ -134,6 +138,7 @@ router.post('/usecoupon',(req,res)=>{
         GROUP BY used_coupons.user_id
         HAVING coupons.coupon_code = '${req.body.coupon_code}' AND user_id = ${data.user_id}`
 
+    //untuk melihat jumlah total berapa kali user telah menggunakan 1 coupon berdasarkan coupon_limit
     conn.query(sql3,(err,results)=>{
         if(err){
             return res.send(err)
@@ -199,7 +204,9 @@ router.post('/usecoupon',(req,res)=>{
 
 })
 
-//GET COUPONS VALUE
+//GET COUPONS VALUE WHERE ORDER_ID IS NULL.
+//karena yang null adalah yang belum di checkout
+//setelah di checkout, baru masukin (update) order_id ke dalam used_coupons
 router.post('/getcouponvalue',(req,res)=>{
     const sql = `SELECT * FROM coupons
     INNER JOIN used_coupons
@@ -225,5 +232,68 @@ router.delete('/deleteusecoupon/:coupon_id/:user_id',(req,res)=>{
         res.send(results)
     })
 })
+
+//=============SHIPPING ADDRESS===============
+//GET MAIN USER ADDRESS
+router.get('/getuseraddress/:user_id',(req,res)=>{
+    const sql = `SELECT * FROM user_address WHERE user_id = ${req.params.user_id} AND main_address = 1`
+
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+
+        res.send(results[0])
+    })
+})
+
+//GET ALL USER ADDRESS
+router.get('/getalluseraddress/:user_id',(req,res)=>{
+    const sql = `SELECT * FROM user_address WHERE user_id = ${req.params.user_id} ORDER BY main_address DESC`
+
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results)
+    })
+})
+
+//GET ALL SHIPPING CITY
+router.get('/allshippingcity',(req,res)=>{
+    const sql = `SELECT * FROM shipping ORDER BY city`
+
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results)
+    })
+})
+
+//ADD NEW USER ADDRESS
+router.post('/newuseraddress',(req,res)=>{
+    const data = req.body
+    const sql = `SELECT * FROM user_address WHERE user_id = ${req.body.user_id}`
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+
+        if(results.length === 5){
+            return res.send('Number of maximum address exceeded')
+        }else{
+            const sql2 = `INSERT INTO user_address SET ?`
+
+            conn.query(sql2,data,(err,results2)=>{
+                if(err){
+                    return res.send(err)
+                }
+                res.send(results2)
+            })
+        }
+    })
+})
+
 
 module.exports = router

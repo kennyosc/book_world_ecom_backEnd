@@ -4,6 +4,7 @@ use book_world_db;
 -- PRIMARY TABLES
 -- users,products, categories
 select * from users;
+
 CREATE TABLE users (
     id INT PRIMARY KEY AUTO_INCREMENT,
     first_name VARCHAR(255) NOT NULL,
@@ -21,6 +22,35 @@ CREATE TABLE users (
 );
 
 SELECT * FROM users;
+
+CREATE TABLE user_address(
+id INT AUTO_INCREMENT PRIMARY KEY,
+user_id INT NOT NULL,
+address varchar(255) not null,
+city VARCHAR(255) not null,
+postal_code varchar(255) not null,
+main_address boolean,
+constraint FK_address_userId
+foreign key (user_id) references users(id)
+);
+
+select * from user_address;
+
+create table shipping(
+id INT AUTO_INCREMENT PRIMARY KEY,
+city VARCHAR(255) NOT NULL UNIQUE,
+shipping_cost INT NOT NULL,
+created_at TIMESTAMP DEFAULT NOW(),
+updated_at TIMESTAMP DEFAULT NOW() ON UPDATE NOW()
+);
+
+INSERT INTO shipping (city,shipping_cost) VALUES
+('Jakarta',9000),('Surabaya',19000),('Bandung',11000),('Bekasi',9000),('Tangerang',9000),('Depok',9000),('Semarang',18000),('Tangerang Selatan',9000),('Bogor',9000),('Malang',22000),('Medan',37000),
+('Balikpapan',49000),('Denpasar',28000),('Yogjakarta',18000),('Palembang',22000),('Makassar',43000),('Manado',60000),('Batam',35000),('Pekanbaru',35000),('Banjarmasin',41000),('Pontianak',37000),('Solo',18000),
+('Samarinda',55000),('Padang',35000),('Lampung',19000);
+
+select * from shipping;
+select * from shipping order by city ASC;
 
 CREATE TABLE products (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -80,6 +110,9 @@ CREATE TABLE coupons (
 insert into coupons (coupon_code,coupon_value,quantity,coupon_limit) VALUES
 ('1234abcd',50000,50,3);
 
+insert into coupons (coupon_code,coupon_value,quantity,coupon_limit) VALUES
+('abcd1234',25000,50,3);
+
 select * from coupons;
 
 CREATE TABLE used_coupons(
@@ -101,6 +134,13 @@ ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 SELECT * FROM used_coupons;
+SELECT user_id, coupon_code,count(*) as total_used, coupon_limit FROM coupons
+        INNER JOIN used_coupons
+            ON coupons.id = used_coupons.coupon_id
+        GROUP BY used_coupons.user_id
+        HAVING coupons.coupon_code = '1234abcd' AND user_id =2 ;
+        
+
 
 CREATE TABLE admins(
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -208,6 +248,18 @@ CREATE TABLE wishlist (
 );
 
 select * from wishlist;
+
+SELECT 
+    name,
+    case
+		WHEN wishlist.user_id = 2 AND wishlist.product_id = 12 THEN 'Wishlisted'
+        Else 'unwished'
+        END AS 'Wishlist'
+FROM
+    products,wishlist,users
+GROUP BY name
+ORDER BY products.created_at DESC
+LIMIT 5;
 
 select * from products;
 select * from product_categories;

@@ -60,6 +60,7 @@ router.get('/productcategories', (req,res)=>{
 
 //GET PRODUCT GENRES
 router.get('/productgenres',(req,res)=>{
+    //ASC karena di tampilan front-end jadi urut
     const sql = `SELECT * FROM genres ORDER BY genre ASC`
 
     conn.query(sql,(err,results)=>{
@@ -71,7 +72,7 @@ router.get('/productgenres',(req,res)=>{
 })
 
 //POST NEW PRODUCT
-//karena mau bikin marketplace, jadinya tidak perlu product per user
+//karena mau bikin ecommerce, jadinya tidak perlu product per user
 router.post('/addproduct',upload_productImage.single('productImage'),(req,res)=>{
     //insert to products
     const sql = `INSERT INTO products SET ?`
@@ -135,6 +136,7 @@ router.get('/newproducts',(req,res)=>{
 })
 
 //GET PRODUCT_CATEGORY PER ID
+//untuk digunakan di edit product
 router.get('/productcategory/:product_id',(req,res)=>{
     const sql = `select * from product_categories
     inner join products
@@ -261,6 +263,7 @@ router.get('/geteditproductimage/:productimagename', (req,res)=>{
 
 // EDIT PRODUCT IMAGE BY ID
 router.patch('/editproductimage/:product_id',upload_productImage.single('productImage'),(req,res)=>{
+    //ini select dulu karena foto yang sudah ada, mau dicari namanya dan di unlink
     const sql = `SELECT photo FROM products WHERE id = ${req.params.product_id}`
 
     conn.query(sql,(err,results)=>{
@@ -279,8 +282,7 @@ router.patch('/editproductimage/:product_id',upload_productImage.single('product
                 return res.send(err)
             }
         })
-
-
+        //lalu diupdate dengan photo yang baru di-upload
         const sql2 = `UPDATE products SET photo = '${req.file.filename}' WHERE id = ${req.params.product_id}`
                 
             conn.query(sql2,(err,results)=>{
