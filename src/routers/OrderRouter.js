@@ -34,7 +34,7 @@ router.post('/handleaddtocart',(req,res)=>{
     // const sql = `INSERT INTO orders SET ?`
     const data = req.body
     const sql = `SELECT * FROM products WHERE id = ${data.product_id}`
-    const sql3 = `SELECT * FROM order_details WHERE product_id = ${data.product_id} AND user_id = ${data.user_id}`
+    const sql3 = `SELECT * FROM order_details WHERE product_id = ${data.product_id} AND user_id = ${data.user_id} AND order_id IS NULL`
     const sql4 = `INSERT INTO order_details SET ?`
 
     // var orders_data = {
@@ -83,7 +83,7 @@ router.post('/handleaddtocart',(req,res)=>{
             }else{
                 // JIKA ADA YANG SAMA, MAKA...
                 //CEK JUMLAH STOCK YANG SUDAH DIPESAN
-                const sql2 = `SELECT * FROM order_details WHERE user_id = ${data.user_id} AND product_id = ${data.product_id}`
+                const sql2 = `SELECT * FROM order_details WHERE user_id = ${data.user_id} AND product_id = ${data.product_id} AND order_id IS NULL`
 
                 conn.query(sql2,(err,results4)=>{
                     if(err){
@@ -271,6 +271,22 @@ router.get('/allshippingcity',(req,res)=>{
     })
 })
 
+//GET SHIPPING CITY VALUE WHERE USER_ADDRESS = MAIN
+router.get('/shippingvalue/:user_id',(req,res)=>{
+    const sql = `SELECT shipping_cost FROM shipping
+                INNER JOIN user_address
+                ON user_address.city = shipping.city
+                    WHERE user_address.main_address = 1 AND user_id=${req.params.user_id}`
+
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        
+        res.send(results[0])
+    })
+})
+
 //ADD NEW USER ADDRESS
 router.post('/newuseraddress',(req,res)=>{
     const data = req.body
@@ -295,5 +311,99 @@ router.post('/newuseraddress',(req,res)=>{
     })
 })
 
+//SET ADDRESS AS MAIN
+router.patch('/setaddressasmain/:user_id/:address_id',(req,res)=>{
+    const sql = `UPDATE user_address SET main_address = 0 WHERE user_id=${req.params.user_id} AND main_address = 1`
+
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+
+        if(!results){
+            return res.send('Address not found')
+        }
+
+        const sql2 = `UPDATE user_address SET main_address = 1 WHERE user_id=${req.params.user_id} AND id=${req.params.address_id}`
+        conn.query(sql2,(err,results)=>{
+            if(err){
+                return res.send(err)
+            }
+            res.send(results)
+        })
+    })
+})
+
+//=============CHECKOUT===============
+//checkout untuk masukin ke orders,update order_details, dan update coupon
+router.post('/finalcheckout',(req,res)=>{
+    //insert to orders
+    const sql = `INSERT INTO orders SET ?`
+    const data = req.body
+
+    conn.query(sql,data,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        
+        //get orders_id (insertId)
+        if(!results){
+            return res.send('Input order failed')
+        }
+
+        const order_id = results.insertId
+        
+        //update order_details (order_id) supaya 'cart' menjadi hilang
+        const sql2 = `UPDATE order_details SET order_id = ${order_id} WHERE user_id=${data.user_id} AND order_id IS NULL`
+        conn.query(sql2,(err,results2)=>{
+            if(err){
+                return res.send(err)
+            }
+            if(!results2){
+                return res.send('Order Details not found')
+            }
+
+            //update used_coupons (order_id) sehingga coupon tercatat digunakan untuk order sekian
+            const sql3 = `UPDATE used_coupons SET order_id = ${order_id} WHERE user_id =${data.user_id} AND order_id IS NULL`
+            conn.query(sql3,(err,results3)=>{
+                if(err){
+                    return res.send(err)
+                }
+
+                if(!results3){
+                    return res.send('Coupon not found')
+                }
+
+                res.send(results3)
+            })
+        })
+    })
+})
+
+//checkout untuk update stock produk yang dibeli
+router.patch(`/checkoutupdatestock`,(req,res)=>{
+    //get existing product stock
+    const sql = `SELECT stock FROM products WHERE id = ${req.body.product_id}`
+
+    conn.query(sql,(err,results1)=>{
+        if(err){
+            return res.send(err)
+        }
+        if(!results1){
+            return res.send('Product not found')
+        }
+        
+        const existing_stock = results1[0].stock
+        //update product stock
+        const sql2 = `UPDATE products SET stock = ${existing_stock - req.body.quantity} WHERE id=${req.body.product_id}`
+        conn.query(sql2,(err,results2)=>{
+            if(err){
+                return res.send(err)
+            }
+            res.send(results2)
+        })
+
+    })
+})
 
 module.exports = router

@@ -29,12 +29,19 @@ user_id INT NOT NULL,
 address varchar(255) not null,
 city VARCHAR(255) not null,
 postal_code varchar(255) not null,
-main_address boolean,
+main_address boolean default true,
 constraint FK_address_userId
 foreign key (user_id) references users(id)
+on delete cascade on update cascade
 );
 
 select * from user_address;
+
+ALTER TABLE user_address
+ADD COLUMN order_recipient VARCHAR(255) AFTER user_id;
+
+ALTER TABLE user_address
+ADD COLUMN phone_number VARCHAR(255) AFTER order_recipient;
 
 create table shipping(
 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -51,6 +58,11 @@ INSERT INTO shipping (city,shipping_cost) VALUES
 
 select * from shipping;
 select * from shipping order by city ASC;
+
+SELECT shipping_cost FROM shipping
+                INNER JOIN user_address
+                ON user_address.city = shipping.city
+                    WHERE user_address.main_address = 1 AND user_id=2;
 
 CREATE TABLE products (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -193,6 +205,12 @@ CREATE TABLE orders (
         REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+select * from orders;
+ALTER TABLE orders
+ADD COLUMN recipient_address VARCHAR(255) AFTER order_recipient;
+
+		
+
 CREATE TABLE order_details (
     id INT PRIMARY KEY AUTO_INCREMENT,
     order_id INT,
@@ -210,8 +228,10 @@ CREATE TABLE order_details (
         REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+select * from users;
 SELECT * FROM orders;
 SELECT * from order_details;
+select * from used_coupons;
 SELECT * FROM order_details WHERE order_id IS NULL;
 select quantity from order_details;
 
@@ -233,7 +253,7 @@ CREATE TABLE product_categories (
     PRIMARY KEY (product_id , category_id, genre_id)
 );
 
-
+select * from product_categories;
 
 CREATE TABLE wishlist (
     user_id INT NOT NULL,

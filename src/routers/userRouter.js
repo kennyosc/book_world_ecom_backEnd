@@ -276,4 +276,18 @@ router.get('/profile/avatar/:imagename', (req,res)=>{
 
 })
 
+//===================USER ORDERS====================
+//get all orders by user_id
+router.get('/userorders/:user_id',(req,res)=>{
+    const sql = `SELECT DATE_FORMAT(created_at, '%m/%d/%y') as created_at,id,order_recipient,phone_number,recipient_address,total,payment_status,order_status 
+    FROM orders WHERE user_id = ${req.params.user_id}`
+
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results)
+    })
+})
+
 module.exports = router
