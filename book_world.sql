@@ -206,8 +206,12 @@ CREATE TABLE orders (
 );
 
 select * from orders;
+
 ALTER TABLE orders
 ADD COLUMN recipient_address VARCHAR(255) AFTER order_recipient;
+
+ALTER TABLE orders
+ADD COLUMN payment_confirmation VARCHAR(255) after total;
 
 		
 

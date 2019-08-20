@@ -9,10 +9,15 @@ router.post('/admin/login', (req,res)=>{
         if(err){
             return res.send(err)
         }
+
+        //results[0] karena dalam SELECT pasti akan menghasilkan array
+        if(!results[0]){
+            return res.send('Admin not found')
+        }
+
+        //if data is an [{...data}], then it is right
         res.send(results[0])
     })
-
-
 })
 
 //ADD NEW ADMIN
