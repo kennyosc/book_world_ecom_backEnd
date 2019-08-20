@@ -81,5 +81,23 @@ router.patch('/admin/suspenduser/:user_id', (req,res)=>{
     })
 })
 
+//=================ORDERS=================
+//render all orders - manageorders
+router.get('/admin/alluserorders',(req,res)=>{
+    const sql = `SELECT DATE_FORMAT(orders.created_at, '%m/%d/%y') as created_at,users.username,orders.order_recipient,orders.total, orders.payment_confirmation,orders.order_status FROM orders
+                inner join order_details
+                on orders.user_id = order_details.user_id
+                inner join users
+                on users.id = orders.user_id
+                group by orders.id`
+
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results)
+    })
+})
+
 
 module.exports = router
