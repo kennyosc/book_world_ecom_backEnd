@@ -1,5 +1,10 @@
 const router = require('express').Router()
 const conn = require('../connection/index.js')
+const path = require('path')
+const fs = require('fs')
+
+const rootDir = path.join(__dirname,'../..')
+const paymentProofDir = path.join(rootDir, '/uploads/paymentproof')
 
 //ADMIN LOGIN ROUTE
 router.post('/admin/login', (req,res)=>{
@@ -84,18 +89,61 @@ router.patch('/admin/suspenduser/:user_id', (req,res)=>{
 //=================ORDERS=================
 //render all orders - manageorders
 router.get('/admin/alluserorders',(req,res)=>{
-    const sql = `SELECT DATE_FORMAT(orders.created_at, '%m/%d/%y') as created_at,users.username,orders.order_recipient,orders.total, orders.payment_confirmation,orders.order_status FROM orders
+    const sql = `SELECT DATE_FORMAT(orders.created_at, '%m/%d/%y') as created_at,users.username,orders.order_recipient,orders.total, orders.payment_confirmation,orders.order_status, orders.id FROM orders
                 inner join order_details
                 on orders.user_id = order_details.user_id
                 inner join users
                 on users.id = orders.user_id
-                group by orders.id`
+                group by orders.id
+                order by orders.created_at DESC`
 
     conn.query(sql,(err,results)=>{
         if(err){
             return res.send(err)
         }
         res.send(results)
+    })
+})
+
+//accepting user payment
+router.patch('/acceptuserpayment',(req,res)=>{
+    const sql = `UPDATE orders SET order_status = 1 WHERE id = ${req.body.id} AND user_id = ${req.body.user_id}`
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results)
+    })
+})
+
+//rejecting user payment
+router.patch('/rejectuserpayment',(req,res)=>{
+    const sql = `SELECT payment_confirmation from orders WHERE id = ${req.body.id} AND user_id = ${req.body.user_id}`
+    const sql2 = `UPDATE orders SET payment_confirmation = null WHERE id = ${req.body.id} AND user_id = ${req.body.user_id}`
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+
+        if(!results[0]){
+            return res.send('Proof not found')
+        }
+
+        const proofName = results[0].payment_confirmation
+        const proofPath = paymentProofDir + '/' + proofName
+
+        fs.unlink(proofPath,(err)=>{
+            if(err){
+                return res.send(err)
+            }
+        })
+
+        conn.query(sql2,(err,results)=>{
+            if(err){
+                return res.send(err)
+            }
+            res.send(results)
+        })
     })
 })
 

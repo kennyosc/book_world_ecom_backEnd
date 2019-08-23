@@ -115,7 +115,19 @@ router.post('/addproduct',upload_productImage.single('productImage'),(req,res)=>
 
 //GET ALL PRODUCTS
 router.get('/allproducts', (req,res)=>{
-    const sql = `SELECT * FROM products`
+    const sql = `SELECT * FROM products ORDER BY created_at DESC`
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results)
+    })
+})
+
+//SEARCHED PRODUCTS
+router.get('/search/:product_title',(req,res)=>{
+    const sql = `SELECT * FROM products WHERE name LIKE '%${req.params.product_title}%'`
+
     conn.query(sql,(err,results)=>{
         if(err){
             return res.send(err)

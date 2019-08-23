@@ -15,6 +15,7 @@ const multer = require('multer')
 //photo directory
 const rootDir = path.join(__dirname,'../..')
 const avatarDir = path.join(rootDir, '/uploads/avatars')
+const paymentProofDir = path.join(rootDir, '/uploads/paymentproof')
 
 //konfigurasi untuk storage menaruh file avatar
 const avatar_storage = multer.diskStorage(
@@ -30,7 +31,18 @@ const avatar_storage = multer.diskStorage(
             //     mimetype: 'image/jpeg' }
 
             // console.log(path)
-            cb(null, Date.now() + '_' + file.fieldname + path.extname(file.originalname))
+            cb(null, (Date.now() + '_' + file.fieldname + path.extname(file.originalname)).toLowerCase())
+        }
+    }
+)
+
+const payment_proof_storage = multer.diskStorage(
+    {
+        destination: function(req,file,cb){
+            cb(null,paymentProofDir)
+        },
+        filename: function(req,file,cb){
+            cb(null,(Date.now()+ '_' + file.fieldname + path.extname(file.originalname)).toLowerCase())
         }
     }
 )
@@ -43,7 +55,23 @@ const upload_avatar = multer(
             fileSize: 1000000
         },
         fileFilter(req,file,cb){
-            if(file.originalname.match(/\.(jpg|png|jpeg)$/)){
+            if(file.originalname.toLowerCase().match(/\.(jpg|png|jpeg)$/)){
+                cb(null,true)
+            }else{
+                cb(new Error('Please upload a .jpg .png .jpeg photo'))
+            }
+        }
+    }
+)
+
+const upload_payment_proof = multer(
+    {
+        storage: payment_proof_storage,
+        limits:{
+            fileSize: 1000000
+        },
+        fileFilter(req,file,cb){
+            if(file.originalname.toLowerCase().match(/\.(jpg|png|jpeg)$/)){
                 cb(null,true)
             }else{
                 cb(new Error('Please upload a .jpg .png .jpeg photo'))
@@ -280,13 +308,42 @@ router.get('/profile/avatar/:imagename', (req,res)=>{
 //get all orders by user_id
 router.get('/userorders/:user_id',(req,res)=>{
     const sql = `SELECT DATE_FORMAT(created_at, '%m/%d/%y') as created_at,id,order_recipient,phone_number,recipient_address,total,payment_confirmation,order_status 
-    FROM orders WHERE user_id = ${req.params.user_id}`
+    FROM orders WHERE user_id= ${req.params.user_id}  ORDER BY created_at DESC`
 
     conn.query(sql,(err,results)=>{
         if(err){
             return res.send(err)
         }
         res.send(results)
+    })
+})
+
+router.patch(`/uploadpaymentproof`, upload_payment_proof.single('payment_proof'),(req,res)=>{
+    const sql = `SELECT payment_confirmation FROM orders WHERE id = ${req.body.order_id} AND user_id=${req.body.user_id}`
+    const sql2 = `UPDATE orders SET payment_confirmation='${req.file.filename}' where id =${req.body.order_id} AND user_id = ${req.body.user_id}`
+    
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+
+        if(results[0].payment_confirmation){
+            const proofName = results2[0].payment_confirmation
+            const proofPath = paymentProofDir + '/' + proofName
+
+            fs.unlink(proofPath,(err)=>{
+                if(err){
+                    return res.send(err)
+                }
+            })
+        }
+        
+            conn.query(sql2,(err,results2)=>{
+                if(err){
+                    return res.send(req.file.filename)
+                }
+                res.send(req.file)
+            })
     })
 })
 
