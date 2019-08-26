@@ -180,7 +180,8 @@ router.get('/productdetails/:product_id',(req,res)=>{
 
 //GET ALL PRODUCT REVIEW PER product_id
 router.get('/productreviews/:product_id',(req,res)=>{
-    const sql = `SELECT * FROM product_reviews
+    const sql = `SELECT DATE_FORMAT(product_reviews.created_at, '%m/%d/%y') AS created_at, users.username,
+                users.avatar, product_reviews.rating_value, product_reviews.review FROM product_reviews
                 INNER JOIN users
                 ON users.id = product_reviews.user_id
                 
@@ -192,6 +193,17 @@ router.get('/productreviews/:product_id',(req,res)=>{
             return res.send(err)
         }
         res.send(results)
+    })
+})
+
+//GET AVG OF PRODUCT_REVIEWS BY PRODUCT ID
+router.get(`/averageproductrating/:product_id`,(req,res)=>{
+    const sql = `SELECT avg(rating_value) AS ratings from product_reviews WHERE product_id = ${req.params.product_id}`
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results[0])
     })
 })
 
