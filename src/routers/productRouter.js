@@ -178,6 +178,23 @@ router.get('/productdetails/:product_id',(req,res)=>{
     })
 })
 
+//GET ALL PRODUCT REVIEW PER product_id
+router.get('/productreviews/:product_id',(req,res)=>{
+    const sql = `SELECT * FROM product_reviews
+                INNER JOIN users
+                ON users.id = product_reviews.user_id
+                
+                WHERE product_id = ${req.params.product_id}
+                LIMIT 5`
+
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results)
+    })
+})
+
 //DELETE PRODUCT BY ID
 router.delete('/deleteproduct/:product_id',(req,res)=>{
     const sql = `SELECT photo FROM products WHERE id = ${req.params.product_id}`
