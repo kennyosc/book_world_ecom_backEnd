@@ -171,6 +171,7 @@ SELECT * FROM admins;
 CREATE TABLE product_reviews (
     id INT AUTO_INCREMENT,
     user_id INT NOT NULL,
+    order_id INT not null,
     product_id INT NOT NULL,
     rating_value ENUM('1', '2', '3', '4', '5'),
     review TEXT NOT NULL,
@@ -182,8 +183,13 @@ CREATE TABLE product_reviews (
     CONSTRAINT FK_productId FOREIGN KEY (product_id)
         REFERENCES products (id)
         ON DELETE CASCADE ON UPDATE CASCADE,
-    PRIMARY KEY (id , user_id , product_id)
+	CONSTRAINT FK_orderId FOREIGN KEY (order_id)
+        REFERENCES orders (id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    PRIMARY KEY (id , user_id , product_id, order_id)
 );
+
+SELECT * FROM product_reviews;
 
 -- table order akan diinput bersamaann ketika add to cart bersama dengan order_details
 -- ketika checkout, orders.id harus naik 1
@@ -207,6 +213,13 @@ CREATE TABLE orders (
 
 select * from orders;
 
+alter table orders
+drop column payment_status,
+drop column checkout_status;
+
+alter table orders
+drop column review_status;
+
 ALTER TABLE orders
 ADD COLUMN recipient_address VARCHAR(255) AFTER order_recipient;
 
@@ -222,6 +235,7 @@ CREATE TABLE order_details (
     product_id INT NOT NULL,
     quantity INT NOT NULL,
     sub_total INT NOT NULL,
+    review_status boolean default false,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
     CONSTRAINT FK_details_orderId FOREIGN KEY (order_id)
@@ -237,7 +251,21 @@ SELECT * FROM orders;
 SELECT * from order_details;
 select * from used_coupons;
 SELECT * FROM order_details WHERE order_id IS NULL;
-select quantity from order_details;
+
+select * from orders
+inner join order_details
+on orders.id = order_details.order_id
+inner join products
+on products.id = order_details.product_id
+WHERE orders.id = 10 ;
+
+alter table order_details
+ADD COLUMN review_status boolean default false AFTER sub_total;
+
+SELECT products.name, products.photo, products.price FROM order_details 
+    INNER JOIN products
+    ON products.id = order_details.product_id
+    WHERE user_id = 2 AND order_id = 10;
 
 select sum(sub_total) as totalOrder from order_details WHERE user_id = 2 AND order_id is null;
 SELECT quantity FROM order_details WHERE user_id = 3 AND product_id = 8;

@@ -215,6 +215,8 @@ router.patch('/updateprofile/:id', (req,res)=>{
         if(err){
             return res.send(err)
         }
+
+        //karena mau dikirim lagi ke front-end untuk update redux
         const sql2 = `SELECT * FROM users WHERE id = ${req.params.id}`
         conn.query(sql2, (err,results2)=>{
             if(err){
@@ -318,6 +320,7 @@ router.get('/userorders/:user_id',(req,res)=>{
     })
 })
 
+//uploading proof of payment
 router.patch(`/uploadpaymentproof`, upload_payment_proof.single('payment_proof'),(req,res)=>{
     const sql = `SELECT payment_confirmation FROM orders WHERE id = ${req.body.order_id} AND user_id=${req.body.user_id}`
     const sql2 = `UPDATE orders SET payment_confirmation='${req.file.filename}' where id =${req.body.order_id} AND user_id = ${req.body.user_id}`
@@ -344,6 +347,45 @@ router.patch(`/uploadpaymentproof`, upload_payment_proof.single('payment_proof')
                 }
                 res.send(req.file)
             })
+    })
+})
+
+//render all product in order_details where order_id = ....
+router.get(`/userproductreview/:user_id/:order_id`,(req,res)=>{
+    const sql = `SELECT orders.id AS order_id, order_details.id AS order_details_id,order_details.review_status,
+    products.id AS product_id,products.photo,products.name,products.price,
+    products.author,products.published FROM order_details 
+
+    INNER JOIN products
+    ON products.id = order_details.product_id
+    INNER JOIN orders
+    ON orders.id = order_details.order_id
+    WHERE order_details.user_id = ${req.params.user_id} AND order_details.order_id = ${req.params.order_id}`
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results)
+    })
+})
+
+//ADD PRODUCT REVIEW
+router.post(`/addproductreview`,(req,res)=>{
+    const sql = `INSERT INTO product_reviews SET ?`
+    const data = req.body
+
+    conn.query(sql,data,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        
+        const sql2 = `UPDATE order_details SET review_status = 1 WHERE order_id=${data.order_id} AND user_id=${data.user_id} AND product_id=${data.product_id}`
+        conn.query(sql2,(err,results2)=>{
+            if(err){
+                return res.send(err)
+            }
+            res.send(results2)
+        })
     })
 })
 
