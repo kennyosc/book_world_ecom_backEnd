@@ -2,13 +2,14 @@ const router = require('express').Router()
 const conn = require('../connection/index.js')
 const path = require('path')
 const fs = require('fs')
+const bcrypt = require('bcrypt')
 
 const rootDir = path.join(__dirname,'../..')
 const paymentProofDir = path.join(rootDir, '/uploads/paymentproof')
 
 //ADMIN LOGIN ROUTE
 router.post('/admin/login', (req,res)=>{
-    const sql = `SELECT * FROM admins WHERE username = '${req.body.username}' AND password = '${req.body.password}'`
+    const sql = `SELECT * FROM admins WHERE username = '${req.body.username}'`
 
     conn.query(sql,(err,results)=>{
         if(err){
@@ -19,9 +20,15 @@ router.post('/admin/login', (req,res)=>{
         if(!results[0]){
             return res.send('Admin not found')
         }
-
-        //if data is an [{...data}], then it is right
-        res.send(results[0])
+        // parameter 1 : yang diinput
+        // paramater 2 : yang di database
+        bcrypt.compare(req.body.password, results[0].password).then(value=>{
+            if(value === false){
+                return res.send(results[0].password)
+            }
+            //if data is an [{...data}], then it is right
+            res.send(results[0] )
+        })
     })
 })
 
@@ -29,6 +36,8 @@ router.post('/admin/login', (req,res)=>{
 router.post('/addadmin', (req,res)=>{
     const sql = `INSERT INTO admins SET ?`
     const data = req.body
+
+    data.password = bcrypt.hashSync(data.password, 8)
 
     conn.query(sql,data, (err,results)=>{
         if(err){
@@ -146,6 +155,45 @@ router.patch('/rejectuserpayment',(req,res)=>{
         })
     })
 })
+
+//=================NOTIFICATION=================
+//get all notifications
+router.get(`/adminnotification`,(req,res)=>{
+    const sql= `SELECT DATE_FORMAT(created_at, '%m/%d/%y %H:%i:%S') AS created_at, notification,id
+                FROM admin_notifications ORDER BY created_at DESC`
+
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results)
+    })
+})
+
+//delete 1 notification
+router.delete(`/deletenotification/:user_id/:notif_id`,(req,res)=>{
+    const sql = `DELETE FROM admin_notifications WHERE user_id=${req.params.user_id} AND id=${req.params.notif_id}`
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results)
+    })
+})
+
+//delete all notification
+router.delete(`/deleteallnotification`,(req,res)=>{
+    const sql = `DELETE FROM admin_notifications`
+
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results)
+    })
+})
+
+//=================STATS=================
 
 
 module.exports = router

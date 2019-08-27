@@ -311,6 +311,17 @@ router.post('/newuseraddress',(req,res)=>{
     })
 })
 
+//DELETE USER ADDRESS PER ID
+router.delete(`/deleteuseraddress/:user_id/:address_id`,(req,res)=>{
+    const sql = `DELETE FROM user_address WHERE user_id=${req.params.user_id} AND id=${req.params.address_id}`
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results)
+    })
+})
+
 //SET ADDRESS AS MAIN
 router.patch('/setaddressasmain/:user_id/:address_id',(req,res)=>{
     const sql = `UPDATE user_address SET main_address = 0 WHERE user_id=${req.params.user_id} AND main_address = 1`

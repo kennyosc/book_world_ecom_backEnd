@@ -190,6 +190,7 @@ CREATE TABLE product_reviews (
 );
 
 SELECT * FROM product_reviews;
+SELECT avg(rating_value) from product_reviews WHERE product_id = 8;
 
 -- table order akan diinput bersamaann ketika add to cart bersama dengan order_details
 -- ketika checkout, orders.id harus naik 1
@@ -212,6 +213,18 @@ CREATE TABLE orders (
 );
 
 select * from orders;
+select sum(total) from orders;
+
+SELECT * FROM orders
+WHERE created_at BETWEEN(current_date() - INTERVAL 1 MONTH) AND CURRENT_DATE();
+
+SELECT *
+FROM orders
+WHERE
+    created_at >= DATE_FORMAT(CURRENT_DATE(), '%Y/%m/01')
+        AND created_at < DATE_FORMAT(CURRENT_DATE(), '%Y/%m/31');
+        
+select date_format(current_date(), '%Y/%m/01');
 
 alter table orders
 drop column payment_status,
@@ -325,7 +338,17 @@ inner join genres
 	on 	product_categories.genre_id = genres.id;
 
 
+CREATE TABLE admin_notifications(
+id INT auto_increment primary key,
+user_id INT NOT NULL,
+notification VARCHAR(400) not null,
+created_at TIMESTAMP DEFAULT NOW(),
+updated_at TIMESTAMP default now() on update now(),
+constraint FK_notifications_userID
+foreign key (user_id) references users(id)
+);
 
+select * from admin_notifications;
 
 -- delivery_price(id, region, price)
 

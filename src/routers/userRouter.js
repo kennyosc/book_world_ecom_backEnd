@@ -330,6 +330,7 @@ router.patch(`/uploadpaymentproof`, upload_payment_proof.single('payment_proof')
             return res.send(err)
         }
 
+        //check if there is already proof of payment
         if(results[0].payment_confirmation){
             const proofName = results2[0].payment_confirmation
             const proofPath = paymentProofDir + '/' + proofName
@@ -341,11 +342,22 @@ router.patch(`/uploadpaymentproof`, upload_payment_proof.single('payment_proof')
             })
         }
         
+            //update payment_confirmation
             conn.query(sql2,(err,results2)=>{
                 if(err){
                     return res.send(req.file.filename)
                 }
-                res.send(req.file)
+
+                //add to notification
+                const sql3 = `INSERT INTO admin_notifications (user_id, notification) VALUES
+                (${req.body.user_id}, '${req.body.username} has uploaded proof of payment to order ${req.body.order_id}');`
+
+                conn.query(sql3,(err,results3)=>{
+                    if(err){
+                        return res.send(err)
+                    }
+                    res.send(results3)
+                })
             })
     })
 })
