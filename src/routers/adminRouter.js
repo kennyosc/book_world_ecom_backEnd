@@ -194,6 +194,72 @@ router.delete(`/deleteallnotification`,(req,res)=>{
 })
 
 //=================STATS=================
+router.get(`/totalsalesonemonth`,(req,res)=>{
+    const sql = `SELECT SUM(total) as totalOrders
+    FROM orders
+    WHERE
+        created_at >= DATE_FORMAT(CURRENT_DATE(), '%Y/%m/01')
+            AND created_at < DATE_FORMAT(CURRENT_DATE(), '%Y/%m/31')`
+
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results[0])
+    })
+})
+
+router.get(`/totalbooksoldonemonth`,(req,res)=>{
+    const sql = `SELECT SUM(quantity) as bookSold
+    FROM order_details
+    WHERE
+        created_at >= DATE_FORMAT(CURRENT_DATE(), '%Y/%m/01')
+            AND created_at < DATE_FORMAT(CURRENT_DATE(), '%Y/%m/31')`
+
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results[0])
+    })
+})
+
+router.get(`/averagebookrating`,(req,res)=>{
+    const sql = `SELECT ROUND(avg(rating_value),1) as rating
+    FROM product_reviews`
+
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results[0])
+    })
+})
+
+router.get(`/totalusers`,(req,res)=>{
+    const sql = `SELECT count(*) as totalUsers
+    FROM users`
+
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results[0])
+    })
+})
+
+router.get(`/totalcouponused`,(req,res)=>{
+    const sql = `select sum(coupon_value) as couponCost from used_coupons
+    inner join coupons
+    on used_coupons.coupon_id = coupons.id`
+
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results[0])
+    })
+})
 
 
 module.exports = router

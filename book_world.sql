@@ -218,7 +218,7 @@ select sum(total) from orders;
 SELECT * FROM orders
 WHERE created_at BETWEEN(current_date() - INTERVAL 1 MONTH) AND CURRENT_DATE();
 
-SELECT *
+SELECT SUM(total)
 FROM orders
 WHERE
     created_at >= DATE_FORMAT(CURRENT_DATE(), '%Y/%m/01')
