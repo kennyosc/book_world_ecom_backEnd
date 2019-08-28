@@ -401,4 +401,20 @@ router.post(`/addproductreview`,(req,res)=>{
     })
 })
 
+//=======================WISHLIST==========================
+//RENDER WISHLIST BY ORDER ID
+router.get(`/userwishlist/:user_id`,(req,res)=>{
+    const sql = `SELECT * FROM wishlist 
+                INNER JOIN products
+                ON products.id = wishlist.product_id
+                WHERE user_id=${req.params.user_id}`
+
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results)
+    })
+})
+
 module.exports = router

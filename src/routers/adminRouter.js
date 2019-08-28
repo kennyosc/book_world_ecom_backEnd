@@ -214,7 +214,8 @@ router.get(`/totalbooksoldonemonth`,(req,res)=>{
     FROM order_details
     WHERE
         created_at >= DATE_FORMAT(CURRENT_DATE(), '%Y/%m/01')
-            AND created_at < DATE_FORMAT(CURRENT_DATE(), '%Y/%m/31')`
+            AND created_at < DATE_FORMAT(CURRENT_DATE(), '%Y/%m/31')
+            AND order_id IS NOT NULL`
 
     conn.query(sql,(err,results)=>{
         if(err){
@@ -258,6 +259,42 @@ router.get(`/totalcouponused`,(req,res)=>{
             return res.send(err)
         }
         res.send(results[0])
+    })
+})
+
+//=================COUPONS=================
+//GET ALL COUPONS
+router.get('/allcoupons',(req,res)=>{
+    const sql = `SELECT * FROM coupons`
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results)
+    })
+})
+
+//POST NEW COUPON
+router.post(`/submitnewcoupon`,(req,res)=>{
+    const sql = `INSERT INTO coupons SET ?`
+    const data = req.body
+
+    conn.query(sql,data,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results)
+    })
+})
+
+//DELETE COUPON BY ID
+router.delete(`/deletecoupon/:coupon_id`,(req,res)=>{
+    const sql = `DELETE FROM coupons WHERE id = ${req.params.coupon_id}`
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results)
     })
 })
 

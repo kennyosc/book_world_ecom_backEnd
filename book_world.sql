@@ -23,6 +23,9 @@ CREATE TABLE users (
 
 SELECT * FROM users;
 
+SELECT count(*) as totalUsers
+    FROM users;
+
 CREATE TABLE user_address(
 id INT AUTO_INCREMENT PRIMARY KEY,
 user_id INT NOT NULL,
@@ -111,6 +114,7 @@ select * from genres where genre like '%cookbook%';
 
 CREATE TABLE coupons (
     id INT PRIMARY KEY AUTO_INCREMENT,
+    promotion_title VARCHAR(255) NOT NULL,
     coupon_code CHAR(8) NOT NULL UNIQUE,
     coupon_value INT NOT NULL,
     quantity INT NOT NULL,
@@ -125,10 +129,12 @@ insert into coupons (coupon_code,coupon_value,quantity,coupon_limit) VALUES
 insert into coupons (coupon_code,coupon_value,quantity,coupon_limit) VALUES
 ('abcd1234',25000,50,3);
 
+ALTER TABLE coupons
+ADD column promotion_title VARCHAR(255) after id;
+
 select * from coupons;
 
 CREATE TABLE used_coupons(
-id INT auto_increment primary key,
 coupon_id INT NOT NULL,
 user_id INT NOT NULL,
 order_id INT,
@@ -146,6 +152,11 @@ ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 SELECT * FROM used_coupons;
+
+select sum(coupon_value) from used_coupons
+inner join coupons
+on used_coupons.coupon_id = coupons.id;
+
 SELECT user_id, coupon_code,count(*) as total_used, coupon_limit FROM coupons
         INNER JOIN used_coupons
             ON coupons.id = used_coupons.coupon_id
@@ -271,6 +282,28 @@ on orders.id = order_details.order_id
 inner join products
 on products.id = order_details.product_id
 WHERE orders.id = 10 ;
+
+SELECT 
+    SUM(quantity) AS quantity_sold,
+    order_details.order_id,
+    product_id,
+    products.photo,
+    products.name,
+    products.description
+FROM
+    order_details
+        INNER JOIN
+    products ON order_details.product_id = products.id
+GROUP BY product_id
+HAVING order_details.order_id IS NOT NULL
+ORDER BY quantity_sold DESC;
+                
+	SELECT SUM(quantity) as bookSold
+    FROM order_details
+    WHERE
+        created_at >= DATE_FORMAT(CURRENT_DATE(), '%Y/%m/01')
+            AND created_at < DATE_FORMAT(CURRENT_DATE(), '%Y/%m/31')
+            AND order_id IS NOT NULL;
 
 alter table order_details
 ADD COLUMN review_status boolean default false AFTER sub_total;

@@ -147,6 +147,24 @@ router.get('/newproducts',(req,res)=>{
     })
 })
 
+//GET 3 PRODUCTS FOR BEST SELLERS
+router.get('/bestsellers',(req,res)=>{
+    const sql=`SELECT SUM(quantity) as quantity_sold,order_details.order_id, product_id, products.photo,
+                products.name, products.description from order_details
+                INNER JOIN products
+                ON order_details.product_id = products.id
+                group by product_id
+                HAVING order_id IS NOT NULL
+                ORDER BY quantity_sold DESC
+                LIMIT 3`
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results)
+    })
+})
+
 //GET PRODUCT_CATEGORY PER ID
 //untuk digunakan di edit product
 router.get('/productcategory/:product_id',(req,res)=>{
