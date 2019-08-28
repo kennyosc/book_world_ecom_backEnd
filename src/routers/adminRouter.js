@@ -121,7 +121,16 @@ router.patch('/acceptuserpayment',(req,res)=>{
         if(err){
             return res.send(err)
         }
-        res.send(results)
+
+        const sql2 = `INSERT INTO user_notifications (user_id, notification)
+                        VALUES (${req.body.user_id}, 
+                        'Your payment has been accepted on order ${req.body.id}')`
+        conn.query(sql2,(err,results2)=>{
+            if(err){
+                return res.send(err)
+            }
+            res.send(results)
+        })
     })
 })
 
@@ -147,12 +156,38 @@ router.patch('/rejectuserpayment',(req,res)=>{
             }
         })
 
-        conn.query(sql2,(err,results)=>{
+        conn.query(sql2,(err,results2)=>{
             if(err){
                 return res.send(err)
             }
-            res.send(results)
+
+            const sql3 = `INSERT INTO user_notifications (user_id, notification)
+                        VALUES (${req.body.user_id}, 
+                        'Your payment has been rejected on order ${req.body.id}')`
+
+            conn.query(sql3,(err,results3)=>{
+                if(err){
+                    return res.send(err)
+                }
+
+                res.send(results2)
+            })
         })
+    })
+})
+
+//GETTING USER PAYMENT PROOF
+router.get('/adminpaymentproof/:imagename',(req,res)=>{
+    const options = {
+        root: paymentProofDir
+    }
+
+    const imagename = req.params.imagename
+
+    res.sendFile(imagename, options, (err)=>{
+        if(err){
+            return res.send(err)
+        }
     })
 })
 

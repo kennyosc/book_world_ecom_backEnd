@@ -417,4 +417,40 @@ router.get(`/userwishlist/:user_id`,(req,res)=>{
     })
 })
 
+//=======================NOTIFICATION==========================
+//RENDER USER NOTIFICATION
+router.get(`/usernotifications/:user_id`,(req,res)=>{
+    const sql = `SELECT DATE_FORMAT(created_at, '%m/%d/%y %H:%i:%S') AS created_at, notification,id FROM user_notifications WHERE user_id=${req.params.user_id}`
+
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results)
+    })
+})
+
+//CLEAR 1 USER NOTIFICATION
+router.delete(`/deleteusernotification/:user_id/:notif_id`,(req,res)=>{
+    const sql = `DELETE FROM user_notifications WHERE user_id=${req.params.user_id} AND id=${req.params.notif_id}`
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results)
+    })
+})
+
+//DELETE ALL USER NOTIFICATION
+router.delete(`/deleteallusernotification/:user_id`,(req,res)=>{
+    const sql = `DELETE FROM user_notifications WHERE user_id=${req.params.user_id}`
+
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results)
+    })
+})
+
 module.exports = router

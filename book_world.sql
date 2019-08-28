@@ -227,7 +227,7 @@ select * from orders;
 select sum(total) from orders;
 
 SELECT * FROM orders
-WHERE created_at BETWEEN(current_date() - INTERVAL 1 MONTH) AND CURRENT_DATE();
+WHERE created_at BETWEEN(current_date() - INTERVAL 1 YEAR) AND CURRENT_DATE();
 
 SELECT SUM(total)
 FROM orders
@@ -372,6 +372,16 @@ inner join genres
 
 
 CREATE TABLE admin_notifications(
+id INT auto_increment primary key,
+user_id INT NOT NULL,
+notification VARCHAR(400) not null,
+created_at TIMESTAMP DEFAULT NOW(),
+updated_at TIMESTAMP default now() on update now(),
+constraint FK_notifications_userID
+foreign key (user_id) references users(id)
+);
+
+CREATE TABLE user_notifications(
 id INT auto_increment primary key,
 user_id INT NOT NULL,
 notification VARCHAR(400) not null,
