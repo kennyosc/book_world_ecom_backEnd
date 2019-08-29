@@ -104,7 +104,7 @@ router.post('/addproduct',upload_productImage.single('productImage'),(req,res)=>
             genre_id: data.genre_id
         }
         
-        conn.query(sql2,product_category_data,(err,results)=>{
+        conn.query(sql2,product_category_data,(err,results2)=>{
             if(err){
                 return res.send(err)
             }

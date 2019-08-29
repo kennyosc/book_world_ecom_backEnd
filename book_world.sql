@@ -151,7 +151,13 @@ foreign key (order_id) references orders(id)
 ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+SELECT * FROM coupons;
 SELECT * FROM used_coupons;
+
+SELECT user_id,coupon_id, coupon_code,count(*) as total_used, coupon_limit FROM coupons
+        INNER JOIN used_coupons
+            ON coupons.id = used_coupons.coupon_id
+        WHERE coupons.coupon_code = 'bw_1234' AND user_id = 2;
 
 select sum(coupon_value) from used_coupons
 inner join coupons
@@ -381,17 +387,19 @@ constraint FK_notifications_userID
 foreign key (user_id) references users(id)
 );
 
+select * from admin_notifications;
+
 CREATE TABLE user_notifications(
 id INT auto_increment primary key,
 user_id INT NOT NULL,
 notification VARCHAR(400) not null,
 created_at TIMESTAMP DEFAULT NOW(),
 updated_at TIMESTAMP default now() on update now(),
-constraint FK_notifications_userID
+constraint FK_userNotifications_userID
 foreign key (user_id) references users(id)
 );
 
-select * from admin_notifications;
+select * from user_notifications;
 
 -- delivery_price(id, region, price)
 

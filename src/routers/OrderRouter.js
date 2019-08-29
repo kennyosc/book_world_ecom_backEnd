@@ -135,7 +135,7 @@ router.post('/usecoupon',(req,res)=>{
     const sql3 = `SELECT user_id, coupon_code,count(*) as total_used, coupon_limit FROM coupons
         INNER JOIN used_coupons
             ON coupons.id = used_coupons.coupon_id
-        GROUP BY used_coupons.user_id
+        GROUP BY used_coupons.user_id, used_coupons.coupon_id
         HAVING coupons.coupon_code = '${req.body.coupon_code}' AND user_id = ${data.user_id}`
 
     //untuk melihat jumlah total berapa kali user telah menggunakan 1 coupon berdasarkan coupon_limit

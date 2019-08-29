@@ -420,7 +420,7 @@ router.get(`/userwishlist/:user_id`,(req,res)=>{
 //=======================NOTIFICATION==========================
 //RENDER USER NOTIFICATION
 router.get(`/usernotifications/:user_id`,(req,res)=>{
-    const sql = `SELECT DATE_FORMAT(created_at, '%m/%d/%y %H:%i:%S') AS created_at, notification,id FROM user_notifications WHERE user_id=${req.params.user_id}`
+    const sql = `SELECT DATE_FORMAT(created_at, '%m/%d/%y %H:%i:%S') AS created_at, notification,id FROM user_notifications WHERE user_id=${req.params.user_id} ORDER BY created_at DESC`
 
     conn.query(sql,(err,results)=>{
         if(err){
