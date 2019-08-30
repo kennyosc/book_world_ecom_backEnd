@@ -98,7 +98,7 @@ router.patch('/admin/suspenduser/:user_id', (req,res)=>{
 //=================ORDERS=================
 //render all orders - manageorders
 router.get('/admin/alluserorders',(req,res)=>{
-    const sql = `SELECT DATE_FORMAT(orders.created_at, '%m/%d/%y') as created_at,users.username,orders.order_recipient,orders.total, orders.payment_confirmation,orders.order_status, orders.id FROM orders
+    const sql = `SELECT DATE_FORMAT(orders.created_at, '%m/%d/%y') as created_at,users.username,orders.order_recipient,orders.total, orders.payment_confirmation,orders.order_status, orders.id, orders.canceled FROM orders
                 inner join order_details
                 on orders.user_id = order_details.user_id
                 inner join users
@@ -234,7 +234,8 @@ router.get(`/totalsalesonemonth`,(req,res)=>{
     FROM orders
     WHERE
         created_at >= DATE_FORMAT(CURRENT_DATE(), '%Y/%m/01')
-            AND created_at < DATE_FORMAT(CURRENT_DATE(), '%Y/%m/31')`
+            AND created_at < DATE_FORMAT(CURRENT_DATE(), '%Y/%m/31')
+            AND canceled != 1`
 
     conn.query(sql,(err,results)=>{
         if(err){
@@ -250,7 +251,8 @@ router.get(`/totalbooksoldonemonth`,(req,res)=>{
     WHERE
         created_at >= DATE_FORMAT(CURRENT_DATE(), '%Y/%m/01')
             AND created_at < DATE_FORMAT(CURRENT_DATE(), '%Y/%m/31')
-            AND order_id IS NOT NULL`
+            AND order_id IS NOT NULL
+            AND cancelled != 1`
 
     conn.query(sql,(err,results)=>{
         if(err){

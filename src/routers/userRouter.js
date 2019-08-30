@@ -309,8 +309,18 @@ router.get('/profile/avatar/:imagename', (req,res)=>{
 //===================USER ORDERS====================
 //get all orders by user_id
 router.get('/userorders/:user_id',(req,res)=>{
-    const sql = `SELECT DATE_FORMAT(created_at, '%m/%d/%y') as created_at,id,order_recipient,phone_number,recipient_address,total,payment_confirmation,order_status 
-    FROM orders WHERE user_id= ${req.params.user_id}  ORDER BY created_at DESC`
+    const sql = `SELECT DATE_FORMAT(orders.created_at, '%m/%d/%y') as created_at,orders.id,orders.order_recipient,orders.phone_number,orders.recipient_address,orders.total,orders.payment_confirmation,orders.order_status,orders.user_id,orders.canceled,
+    order_details.product_id, order_details.quantity,
+    products.name, products.description, products.price, products.stock, products.photo
+    FROM orders 
+    
+    INNER JOIN order_details
+    ON order_details.order_id = orders.id
+    INNER JOIN products
+    ON products.id = order_details.product_id
+
+    GROUP BY orders.id
+    HAVING orders.user_id= ${req.params.user_id} ORDER BY orders.created_at DESC`
 
     conn.query(sql,(err,results)=>{
         if(err){
@@ -364,9 +374,9 @@ router.patch(`/uploadpaymentproof`, upload_payment_proof.single('payment_proof')
 
 //render all product in order_details where order_id = ....
 router.get(`/userproductreview/:user_id/:order_id`,(req,res)=>{
-    const sql = `SELECT orders.id AS order_id, order_details.id AS order_details_id,order_details.review_status,
+    const sql = `SELECT orders.id AS order_id, order_details.id AS order_details_id,order_details.review_status,order_details.quantity,
     products.id AS product_id,products.photo,products.name,products.price,
-    products.author,products.published FROM order_details 
+    products.author,products.published, products.stock FROM order_details 
 
     INNER JOIN products
     ON products.id = order_details.product_id

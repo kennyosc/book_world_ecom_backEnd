@@ -57,6 +57,32 @@ router.get('/productcategories', (req,res)=>{
     })
 })
 
+//PATCH EDITED CATEGORIES
+router.patch('/saveeditedcategory',(req,res)=>{
+    const sql = `UPDATE categories SET category = ? WHERE id = ?`
+    const data = [req.body.category, req.body.id]
+
+    conn.query(sql,data,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results)
+    })
+})
+
+//PATCH EDITED GENRES
+router.patch('/saveeditedgenre',(req,res)=>{
+    const sql = `UPDATE genres SET genre = ? WHERE id = ?`
+    const data = [req.body.genre, req.body.id]
+
+    conn.query(sql,data,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results)
+    })
+})
+
 
 //GET PRODUCT GENRES
 router.get('/productgenres',(req,res)=>{

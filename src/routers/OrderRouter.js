@@ -418,4 +418,75 @@ router.patch(`/checkoutupdatestock`,(req,res)=>{
     })
 })
 
+//=============CANCEL ORDER===============
+//update stock product before checkout
+router.patch('/cancelorderupdatestock',(req,res)=>{
+    const updateStock = req.body.product_stock + req.body.order_quantity
+
+    const sql = `UPDATE products SET stock=${updateStock} WHERE id=${req.body.product_id}`
+
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results)
+    })
+})
+
+//update orders.canceled, delete used_coupons
+router.patch('/cancelorder',(req,res)=>{
+    const sql = `UPDATE orders SET canceled = 1 WHERE id=${req.body.order_id} AND user_id=${req.body.user_id}`
+
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+
+        //see if the user uses coupons or not
+        const sql2= `SELECT * FROM used_coupons WHERE user_id=${req.body.user_id} AND order_id=${req.body.order_id}`
+
+        conn.query(sql2,(err,results2)=>{
+            if(err){
+                return res.send(err)
+            }
+            
+            //SEND NOTIFICATIONS TO ADMIN
+            const sql4=`INSERT INTO admin_notifications(user_id,notification) VALUES(${req.body.user_id},'${req.body.username} has cancelled order ${req.body.order_id}')`
+
+            conn.query(sql4,(err,results4)=>{
+                if(err){
+                    return res.send(err)
+                }
+
+                if(!results2[0]){
+                    return res.send('User did not use a coupon in this order')
+                }else{
+                    //if the user has used the coupon then delete it
+                    const sql3 =`DELETE FROM used_coupons WHERE user_id=${req.body.user_id} AND order_id=${req.body.order_id}`
+        
+                    conn.query(sql3,(err,results3)=>{
+                        if(err){
+                            return res.send(err)
+                        }
+                        res.send(results3)
+                    })
+                }
+            })
+        })
+    })
+})
+
+//update order_details
+router.patch(`/canderorderupdatedetails`,(req,res)=>{
+    const sql = `UPDATE order_details SET cancelled = 1 WHERE order_id=${req.body.order_id} AND user_id = ${req.body.user_id} AND product_id=${req.body.product_id}`
+
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results)
+    })
+})
+
+
 module.exports = router
