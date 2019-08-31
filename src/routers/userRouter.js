@@ -124,7 +124,7 @@ router.post('/register',(req,res)=>{
 
     //ubah password jadi hash
     if(data.password.length < 8){
-        return res.send('Password must be >= 8 words')
+        return res.send('Password must be >= 8 characters')
     } else{
         data.password = bcrypt.hashSync(data.password, 8)
     }
@@ -309,7 +309,7 @@ router.get('/profile/avatar/:imagename', (req,res)=>{
 //===================USER ORDERS====================
 //get all orders by user_id
 router.get('/userorders/:user_id',(req,res)=>{
-    const sql = `SELECT DATE_FORMAT(orders.created_at, '%m/%d/%y') as created_at,orders.id,orders.order_recipient,orders.phone_number,orders.recipient_address,orders.total,orders.payment_confirmation,orders.order_status,orders.user_id,orders.canceled,
+    const sql = `SELECT DATE_FORMAT(orders.created_at, '%m/%d/%y %H:%i:%S') as created_at,orders.id,orders.order_recipient,orders.phone_number,orders.recipient_address,orders.total,orders.payment_confirmation,orders.order_status,orders.user_id,orders.canceled,
     order_details.product_id, order_details.quantity,
     products.name, products.description, products.price, products.stock, products.photo
     FROM orders 

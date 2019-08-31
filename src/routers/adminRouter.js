@@ -98,7 +98,7 @@ router.patch('/admin/suspenduser/:user_id', (req,res)=>{
 //=================ORDERS=================
 //render all orders - manageorders
 router.get('/admin/alluserorders',(req,res)=>{
-    const sql = `SELECT DATE_FORMAT(orders.created_at, '%m/%d/%y') as created_at,users.username,orders.order_recipient,orders.total, orders.payment_confirmation,orders.order_status, orders.id, orders.canceled FROM orders
+    const sql = `SELECT DATE_FORMAT(orders.created_at, '%m/%d/%y %H:%i:%S') as created_at,users.username,orders.order_recipient,orders.total, orders.payment_confirmation,orders.order_status, orders.id, orders.canceled, orders.user_id FROM orders
                 inner join order_details
                 on orders.user_id = order_details.user_id
                 inner join users
@@ -181,7 +181,7 @@ router.get('/adminpaymentproof/:imagename',(req,res)=>{
     const options = {
         root: paymentProofDir
     }
-
+    
     const imagename = req.params.imagename
 
     res.sendFile(imagename, options, (err)=>{
@@ -194,7 +194,7 @@ router.get('/adminpaymentproof/:imagename',(req,res)=>{
 //=================NOTIFICATION=================
 //get all notifications
 router.get(`/adminnotification`,(req,res)=>{
-    const sql= `SELECT DATE_FORMAT(created_at, '%m/%d/%y %H:%i:%S') AS created_at, notification,id
+    const sql= `SELECT DATE_FORMAT(created_at, '%m/%d/%y %H:%i:%S') AS created_at, notification,id, user_id
                 FROM admin_notifications ORDER BY created_at DESC`
 
     conn.query(sql,(err,results)=>{
@@ -233,8 +233,8 @@ router.get(`/totalsalesonemonth`,(req,res)=>{
     const sql = `SELECT SUM(total) as totalOrders
     FROM orders
     WHERE
-        created_at >= DATE_FORMAT(CURRENT_DATE(), '%Y/%m/01')
-            AND created_at < DATE_FORMAT(CURRENT_DATE(), '%Y/%m/31')
+        created_at >= DATE_FORMAT(CURRENT_DATE(), '%Y/%m/01 00:00:00')
+            AND created_at <= DATE_FORMAT(CURRENT_DATE(), '%Y/%m/31 23:59:59')
             AND canceled != 1`
 
     conn.query(sql,(err,results)=>{
@@ -249,8 +249,8 @@ router.get(`/totalbooksoldonemonth`,(req,res)=>{
     const sql = `SELECT SUM(quantity) as bookSold
     FROM order_details
     WHERE
-        created_at >= DATE_FORMAT(CURRENT_DATE(), '%Y/%m/01')
-            AND created_at < DATE_FORMAT(CURRENT_DATE(), '%Y/%m/31')
+        created_at >= DATE_FORMAT(CURRENT_DATE(), '%Y/%m/01 00:00:00')
+            AND created_at <= DATE_FORMAT(CURRENT_DATE(), '%Y/%m/31 23:59:59')
             AND order_id IS NOT NULL
             AND cancelled != 1`
 

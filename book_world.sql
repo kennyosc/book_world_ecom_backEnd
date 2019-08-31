@@ -157,7 +157,8 @@ SELECT * FROM used_coupons;
 SELECT user_id,coupon_id, coupon_code,count(*) as total_used, coupon_limit FROM coupons
         INNER JOIN used_coupons
             ON coupons.id = used_coupons.coupon_id
-        WHERE coupons.coupon_code = 'bw_1234' AND user_id = 2;
+        GROUP BY used_coupons.coupon_id,used_coupons.user_id
+        HAVING coupons.coupon_code = 'bw_1234' AND user_id = 2;
 
 select sum(coupon_value) from used_coupons
 inner join coupons
@@ -220,9 +221,8 @@ CREATE TABLE orders (
 	order_recipient VARCHAR(255) NOT NULL,
     phone_number VARCHAR(255),
     total INT NOT NULL,
-    payment_status BOOLEAN DEFAULT FALSE,
     order_status BOOLEAN DEFAULT FALSE,
-    checkout_status BOOLEAN DEFAULT FALSE,
+    canceled BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
     CONSTRAINT FK_orders_userId FOREIGN KEY (user_id)
@@ -256,6 +256,9 @@ ADD COLUMN recipient_address VARCHAR(255) AFTER order_recipient;
 ALTER TABLE orders
 ADD COLUMN payment_confirmation VARCHAR(255) after total;
 
+ALTER TABLE orders
+ADD COLUMN canceled boolean default false after order_status;
+
 		
 
 CREATE TABLE order_details (
@@ -276,9 +279,13 @@ CREATE TABLE order_details (
         REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+alter table order_details
+add column cancelled boolean default false after review_status;
+
 select * from users;
 SELECT * FROM orders;
 SELECT * from order_details;
+SELECT * FROM products;
 select * from used_coupons;
 SELECT * FROM order_details WHERE order_id IS NULL;
 
@@ -404,4 +411,14 @@ select * from user_notifications;
 -- delivery_price(id, region, price)
 
 -- delivery(id, order_id,region, address)
+
+-- TESTING
+
+select * from users;
+SELECT * FROM orders;
+SELECT * from order_details;
+SELECT * FROM products;
+select * from used_coupons;
+select * from product_reviews;
+select * from admin_notifications;
 

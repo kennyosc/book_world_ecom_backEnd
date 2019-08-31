@@ -352,7 +352,15 @@ router.post('/finalcheckout',(req,res)=>{
     const sql = `INSERT INTO orders SET ?`
     const data = req.body
 
-    conn.query(sql,data,(err,results)=>{
+    const orders_data = {
+        user_id: data.user_id,
+        order_recipient : data.order_recipient,
+        recipient_address: data.recipient_address,
+        phone_number: data.phone_number,
+        total: data.total
+    }
+
+    conn.query(sql,orders_data,(err,results)=>{
         if(err){
             return res.send(err)
         }
@@ -375,18 +383,27 @@ router.post('/finalcheckout',(req,res)=>{
                 return res.send('Order Details not found')
             }
 
-            //update used_coupons (order_id) sehingga coupon tercatat digunakan untuk order sekian
-            const sql3 = `UPDATE used_coupons SET order_id = ${order_id} WHERE user_id =${data.user_id} AND order_id IS NULL`
-            conn.query(sql3,(err,results3)=>{
+            //INSERT INTO ADMIN NOTIFICATION
+            const sql4 = `INSERT INTO admin_notifications (user_id,notification) VALUES (${data.user_id},'${data.username} has ordered with a total of Rp ${data.total.toLocaleString('IN')},- at order #bw_${order_id}')`
+
+            conn.query(sql4,(err,results4)=>{
                 if(err){
                     return res.send(err)
                 }
-
-                if(!results3){
-                    return res.send('Coupon not found')
-                }
-
-                res.send(results3)
+                
+                //update used_coupons (order_id) sehingga coupon tercatat digunakan untuk order sekian
+                const sql3 = `UPDATE used_coupons SET order_id = ${order_id} WHERE user_id =${data.user_id} AND order_id IS NULL`
+                conn.query(sql3,(err,results3)=>{
+                    if(err){
+                        return res.send(err)
+                    }
+    
+                    if(!results3){
+                        return res.send('Coupon not found')
+                    }
+    
+                    res.send(results3)
+                })
             })
         })
     })

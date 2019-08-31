@@ -191,6 +191,18 @@ router.get('/bestsellers',(req,res)=>{
     })
 })
 
+//GET 3 PRODUCTS IS BEST SELLERS < 3 
+router.get('/bestseller2',(req,res)=>{
+    const sql=`SELECT * FROM products ORDER BY created_at ASC  LIMIT 3`
+    conn.query(sql,(err,results)=>{
+        if(err){
+            return res.send(err)
+        }
+        res.send(results)
+    })
+})
+
+
 //GET PRODUCT_CATEGORY PER ID
 //untuk digunakan di edit product
 router.get('/productcategory/:product_id',(req,res)=>{
