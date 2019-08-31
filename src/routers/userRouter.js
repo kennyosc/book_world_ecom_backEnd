@@ -129,6 +129,10 @@ router.post('/register',(req,res)=>{
         data.password = bcrypt.hashSync(data.password, 8)
     }
 
+    if(isNaN(data.phoneNumber)){
+        return res.send('Phone number must be a number')
+    }
+
         //CHECK IF USERNAME IS TAKEN OR NOT
         conn.query(sql1, (err,results)=>{
             if(err){
@@ -210,6 +214,18 @@ router.post('/login', (req, res)=>{
 router.patch('/updateprofile/:id', (req,res)=>{
     const data = [req.body, req.params.id ]
     const sql = `UPDATE users SET ? WHERE id = ?`
+
+    if(req.body.id === '' || req.body.first_name === '' || req.body.last_name === '' || req.body.email === '' || req.body.gender === '' || req.body.phone_number === ''){
+        return res.send('Please insert all the required fields')
+    }
+
+    if(isNaN(req.body.phone_number)){
+        return res.send('Phone number must be a number')
+    }
+
+    if(!validator.isEmail(req.body.email)){
+        return res.send('Please input the correct form of email')
+    }
 
     conn.query(sql,data, (err,results)=>{
         if(err){
@@ -360,7 +376,7 @@ router.patch(`/uploadpaymentproof`, upload_payment_proof.single('payment_proof')
 
                 //add to notification
                 const sql3 = `INSERT INTO admin_notifications (user_id, notification) VALUES
-                (${req.body.user_id}, '${req.body.username} has uploaded proof of payment to order ${req.body.order_id}');`
+                (${req.body.user_id}, '${req.body.username} has uploaded proof of payment to order #bw_${req.body.order_id}');`
 
                 conn.query(sql3,(err,results3)=>{
                     if(err){

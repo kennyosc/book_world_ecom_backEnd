@@ -54,6 +54,8 @@ created_at TIMESTAMP DEFAULT NOW(),
 updated_at TIMESTAMP DEFAULT NOW() ON UPDATE NOW()
 );
 
+select * from shipping;
+
 INSERT INTO shipping (city,shipping_cost) VALUES
 ('Jakarta',9000),('Surabaya',19000),('Bandung',11000),('Bekasi',9000),('Tangerang',9000),('Depok',9000),('Semarang',18000),('Tangerang Selatan',9000),('Bogor',9000),('Malang',22000),('Medan',37000),
 ('Balikpapan',49000),('Denpasar',28000),('Yogjakarta',18000),('Palembang',22000),('Makassar',43000),('Manado',60000),('Batam',35000),('Pekanbaru',35000),('Banjarmasin',41000),('Pontianak',37000),('Solo',18000),
@@ -100,6 +102,9 @@ genre VARCHAR(255) NOT NULL unique,
 created_at TIMESTAMP DEFAULT NOW(),
 updated_at TIMESTAMP DEFAULT NOW() ON UPDATE NOW()
 );
+
+select * from genres;
+select * from categories;
 
 INSERT INTO genres(genre) VALUES 
 ('Biography'),('Essay'),('Memoir'),('Narrative nonfiction'),('Periodicals'),('Reference books'),('Self-help'),('Speech'),('Textbook'),('Poetry'),
@@ -392,6 +397,7 @@ created_at TIMESTAMP DEFAULT NOW(),
 updated_at TIMESTAMP default now() on update now(),
 constraint FK_notifications_userID
 foreign key (user_id) references users(id)
+ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 select * from admin_notifications;
@@ -404,6 +410,7 @@ created_at TIMESTAMP DEFAULT NOW(),
 updated_at TIMESTAMP default now() on update now(),
 constraint FK_userNotifications_userID
 foreign key (user_id) references users(id)
+ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 select * from user_notifications;
@@ -418,7 +425,18 @@ select * from users;
 SELECT * FROM orders;
 SELECT * from order_details;
 SELECT * FROM products;
+select * from coupons;
 select * from used_coupons;
 select * from product_reviews;
 select * from admin_notifications;
+
+SELECT SUM(total) as totalOrders
+    FROM orders
+    WHERE
+        created_at >= DATE_FORMAT(CURRENT_DATE(), '%Y/%m/01 00:00:00')
+            AND created_at <= DATE_FORMAT(CURRENT_DATE(), '%Y/%m/31 23:59:59')
+            AND canceled = 0;
+            
+            select DATE_FORMAT(CURRENT_DATE(), '%Y/%m/01 23:59:59');
+            select DATE_FORMAT(CURRENT_DATE(), '%Y/%m/31 23:59:59');
 
