@@ -132,7 +132,7 @@ router.delete('/deletefromcart/:user_id/:product_id',(req,res)=>{
 //WHEN USER USES COUPON
 router.post('/usecoupon',(req,res)=>{
     const data = req.body
-    const sql3 = `SELECT user_id, coupon_code,count(*) as total_used, coupon_limit FROM coupons
+    const sql3 = `SELECT user_id, coupon_code, count(*) as total_used, coupon_limit FROM coupons
         INNER JOIN used_coupons
             ON coupons.id = used_coupons.coupon_id
         GROUP BY used_coupons.user_id, used_coupons.coupon_id
@@ -146,6 +146,7 @@ router.post('/usecoupon',(req,res)=>{
 
         //kalau belum pakai sama sekali, maka post
         if(!results[0]){
+
             const sql = `SELECT * FROM coupons WHERE coupon_code = '${req.body.coupon_code}'`
                 conn.query(sql,(err,results2)=>{
                     if(err){
@@ -155,6 +156,13 @@ router.post('/usecoupon',(req,res)=>{
                     if(!results2[0]){
                         return res.send('Coupon not found')
                     }
+
+                    //cek apakah totalOrder < daripada coupon_value
+                    console.log(results2[0].coupon_value)
+                    if(data.totalOrder < results2[0].coupon_value){
+                        return res.send('Your order amount is not sufficient to use this coupon')
+                    }
+
                     const sql2 = `INSERT INTO used_coupons SET ?`
             
                     const coupon_data = {
@@ -170,6 +178,7 @@ router.post('/usecoupon',(req,res)=>{
                     })
                 })
         }else{
+
             //kalau ada
             //cek apakah user tersebut sudah melebihi limit atau belum
             if(results[0].total_used === results[0].coupon_limit){
@@ -181,6 +190,11 @@ router.post('/usecoupon',(req,res)=>{
                 conn.query(sql,(err,results2)=>{
                     if(err){
                         return res.send(err)
+                    }
+
+                    //cek apakah totalOrder < daripada coupon_value
+                    if(data.totalOrder < results2[0].coupon_value){
+                        return res.send('Your order amount is not sufficient to use this coupon')
                     }
                     
                     const sql2 = `INSERT INTO used_coupons SET ?`
