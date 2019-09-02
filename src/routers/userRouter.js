@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt')
 const validator = require('validator')
 const fs = require('fs')
 
-const mailVerify = require('../../nodemailer/verify_user.js')
+// const mailVerify = require('../../nodemailer/verify_user.js')
 
 //==================================================
 //MODULE UNTUK IMAGE
@@ -129,10 +129,6 @@ router.post('/register',(req,res)=>{
         data.password = bcrypt.hashSync(data.password, 8)
     }
 
-    if(isNaN(data.phoneNumber)){
-        return res.send('Phone number must be a number')
-    }
-
         //CHECK IF USERNAME IS TAKEN OR NOT
         conn.query(sql1, (err,results)=>{
             if(err){
@@ -215,7 +211,7 @@ router.patch('/updateprofile/:id', (req,res)=>{
     const data = [req.body, req.params.id ]
     const sql = `UPDATE users SET ? WHERE id = ?`
 
-    if(req.body.id === '' || req.body.first_name === '' || req.body.last_name === '' || req.body.email === '' || req.body.gender === '' || req.body.phone_number === ''){
+    if(req.body.id === '' || req.body.first_name === '' || req.body.email === '' || req.body.gender === ''){
         return res.send('Please insert all the required fields')
     }
 
@@ -254,12 +250,8 @@ router.patch('/updatepassword/:id', (req,res)=>{
             return res.send('Password Incorrect')
         }
 
-        if(data.oldPassword.length < 8){
-            return res.send('Password must be minimum 8 characters')
-        }
-        
         const data = req.body
-        
+
         const verifyPassword = bcrypt.compare(data.oldPassword,results[0].password)
         const newPassword = bcrypt.hashSync(data.newPassword , 8)
 
@@ -395,7 +387,7 @@ router.patch(`/uploadpaymentproof`, upload_payment_proof.single('payment_proof')
 
 //render all product in order_details where order_id = ....
 router.get(`/userproductreview/:user_id/:order_id`,(req,res)=>{
-    const sql = `SELECT orders.id AS order_id, order_details.id AS order_details_id,order_details.review_status,order_details.quantity,
+    const sql = `SELECT orders.id AS order_id, order_details.id AS order_details_id,order_details.review_status,order_details.quantity, order_details.sub_total,
     products.id AS product_id,products.photo,products.name,products.price,
     products.author,products.published, products.stock FROM order_details 
 

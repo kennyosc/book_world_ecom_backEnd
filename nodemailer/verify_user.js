@@ -12,7 +12,7 @@ const transporter = nodemailer.createTransport(
             user:'kennyoscar95@gmail.com',
             //clientId ambil dari google api credentials
             clientId:'1077309332924-hg2fspgq22sv1q8cg5gjf9h821b3fh9g.apps.googleusercontent.com',
-            clientSecret: 'DH28H3iiNOwbcQegfRon7A3P',
+            clientSecret: 'c7TVL1lRrxzw9XJvjGLHjQaG',
             // https://auth0.com/learn/token-based-authentication-made-easy/
             // A client token is a signed data blob that includes configuration and authorization 
             // Token based authentication works by ensuring that each request to a server is accompanied by a signed token which the server verifies for authenticity and only then responds to the request.
