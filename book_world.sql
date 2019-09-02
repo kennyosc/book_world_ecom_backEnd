@@ -439,4 +439,21 @@ SELECT SUM(total) as totalOrders
             
             select DATE_FORMAT(CURRENT_DATE(), '%Y/%m/01 23:59:59');
             select DATE_FORMAT(CURRENT_DATE(), '%Y/%m/31 23:59:59');
+            
+            SELECT count(*) as all_used_coupons, coupons.id, coupons.quantity, coupons.coupon_code FROM coupons
+        INNER JOIN used_coupons
+            ON coupons.id = used_coupons.coupon_id
+        GROUP BY used_coupons.coupon_id
+        HAVING coupons.coupon_code = 'bw_1234';
+        
+        SELECT SUM(total) as totalOrders
+    FROM orders
+    WHERE
+        created_at >= DATE_FORMAT(CURRENT_DATE(), '2017/%m/01 00:00:00')
+            AND created_at <= DATE_FORMAT(CURRENT_DATE(), '%Y/%m/31 23:59:59')
+            AND canceled = 0;
+            
+            
+            select DATE_FORMAT(CURRENT_DATE(), '2018/%m/01 00:00:00');
+            
 

@@ -117,7 +117,7 @@ router.post('/handleaddtocart',(req,res)=>{
 //DELETE FROM CART
 router.delete('/deletefromcart/:user_id/:product_id',(req,res)=>{
     //DELETE FROM CART BY USER AND PRODUCT ID
-    const sql = `DELETE FROM order_details WHERE user_id = ${req.params.user_id} AND product_id = ${req.params.product_id}`
+    const sql = `DELETE FROM order_details WHERE user_id = ${req.params.user_id} AND product_id = ${req.params.product_id} AND order_id IS NULL`
 
     conn.query(sql,(err,results)=>{
         if(err){
@@ -132,20 +132,19 @@ router.delete('/deletefromcart/:user_id/:product_id',(req,res)=>{
 //WHEN USER USES COUPON
 router.post('/usecoupon',(req,res)=>{
     const data = req.body
-    const sql3 = `SELECT user_id, coupon_code, count(*) as total_used, coupon_limit FROM coupons
-        INNER JOIN used_coupons
-            ON coupons.id = used_coupons.coupon_id
-        GROUP BY used_coupons.user_id, used_coupons.coupon_id
-        HAVING coupons.coupon_code = '${req.body.coupon_code}' AND user_id = ${data.user_id}`
+    const sql4 = `SELECT count(*) as all_used_coupons, coupons.id, coupons.quantity, coupons.coupon_code FROM coupons
+    INNER JOIN used_coupons
+        ON coupons.id = used_coupons.coupon_id
+    GROUP BY used_coupons.coupon_id
+    HAVING coupons.coupon_code = '${req.body.coupon_code}'`
 
-    //untuk melihat jumlah total berapa kali user telah menggunakan 1 coupon berdasarkan coupon_limit
-    conn.query(sql3,(err,results)=>{
+    conn.query(sql4,(err,results4)=>{
         if(err){
             return res.send(err)
         }
 
-        //kalau belum pakai sama sekali, maka post
-        if(!results[0]){
+        //kalau coupon blom pernah dipakai
+        if(!results4[0]){
 
             const sql = `SELECT * FROM coupons WHERE coupon_code = '${req.body.coupon_code}'`
                 conn.query(sql,(err,results2)=>{
@@ -163,6 +162,7 @@ router.post('/usecoupon',(req,res)=>{
                         return res.send('Your order amount is not sufficient to use this coupon')
                     }
 
+                    //INSERT INTO used_coupons
                     const sql2 = `INSERT INTO used_coupons SET ?`
             
                     const coupon_data = {
@@ -178,44 +178,98 @@ router.post('/usecoupon',(req,res)=>{
                     })
                 })
         }else{
-
-            //kalau ada
-            //cek apakah user tersebut sudah melebihi limit atau belum
-            if(results[0].total_used === results[0].coupon_limit){
-                return res.send('Coupon have reached its limit')
-            }else{
-
-                //jika belum maka masukin ke used_coupons
-                const sql = `SELECT * FROM coupons WHERE coupon_code = '${req.body.coupon_code}'`
-                conn.query(sql,(err,results2)=>{
-                    if(err){
-                        return res.send(err)
-                    }
-
-                    //cek apakah totalOrder < daripada coupon_value
-                    if(data.totalOrder < results2[0].coupon_value){
-                        return res.send('Your order amount is not sufficient to use this coupon')
-                    }
-                    
-                    const sql2 = `INSERT INTO used_coupons SET ?`
             
-                    const coupon_data = {
-                        user_id : data.user_id,
-                        coupon_id : results2[0].id
-                    }
-            
-                    conn.query(sql2,coupon_data,(err,results3)=>{
-                        if(err){
-                            return res.send(err)
-                        }
-                        res.send(results3)
-                    })
-                })
+            //kalau coupon sudah pernah dipakai maka lakuin ini
+            if(results4[0].all_used_coupons === results4[0].quantity){
+                return res.send("Coupons have reached it's limit")
             }
-        }
-        
-    })
 
+            const sql3 = `SELECT user_id, coupon_code, count(*) as total_used, coupon_limit FROM coupons
+            INNER JOIN used_coupons
+                ON coupons.id = used_coupons.coupon_id
+            GROUP BY used_coupons.user_id, used_coupons.coupon_id
+            HAVING coupons.coupon_code = '${req.body.coupon_code}' AND user_id = ${data.user_id}`
+    
+            //untuk melihat jumlah total berapa kali user telah menggunakan 1 coupon berdasarkan coupon_limit
+            conn.query(sql3,(err,results)=>{
+                if(err){
+                    return res.send(err)
+                }
+    
+                //kalau belum pakai sama sekali, maka post
+                if(!results[0]){
+    
+                    const sql = `SELECT * FROM coupons WHERE coupon_code = '${req.body.coupon_code}'`
+                        conn.query(sql,(err,results2)=>{
+                            if(err){
+                                return res.send(err)
+                            }
+                            
+                            if(!results2[0]){
+                                return res.send('Coupon not found')
+                            }
+    
+                            //cek apakah totalOrder < daripada coupon_value
+                            console.log(results2[0].coupon_value)
+                            if(data.totalOrder < results2[0].coupon_value){
+                                return res.send('Your order amount is not sufficient to use this coupon')
+                            }
+    
+                            const sql2 = `INSERT INTO used_coupons SET ?`
+                    
+                            const coupon_data = {
+                                user_id : data.user_id,
+                                coupon_id : results2[0].id
+                            }
+                    
+                            conn.query(sql2,coupon_data,(err,results3)=>{
+                                if(err){
+                                    return res.send(err)
+                                }
+                                res.send(results3)
+                            })
+                        })
+                }else{
+    
+                    //kalau ada
+                    //cek apakah user tersebut sudah melebihi limit atau belum
+                    if(results[0].total_used === results[0].coupon_limit){
+                        return res.send("You have reached this coupon's limit")
+                    }else{
+    
+                        //jika belum maka masukin ke used_coupons
+                        const sql = `SELECT * FROM coupons WHERE coupon_code = '${req.body.coupon_code}'`
+                        conn.query(sql,(err,results2)=>{
+                            if(err){
+                                return res.send(err)
+                            }
+    
+                            //cek apakah totalOrder < daripada coupon_value
+                            if(data.totalOrder < results2[0].coupon_value){
+                                return res.send('Your order amount is not sufficient to use this coupon')
+                            }
+                            
+                            const sql2 = `INSERT INTO used_coupons SET ?`
+                    
+                            const coupon_data = {
+                                user_id : data.user_id,
+                                coupon_id : results2[0].id
+                            }
+                    
+                            conn.query(sql2,coupon_data,(err,results3)=>{
+                                if(err){
+                                    return res.send(err)
+                                }
+                                res.send(results3)
+                            })
+                        })
+                    }
+                }
+                
+            })
+
+        }
+    })
 })
 
 //GET COUPONS VALUE WHERE ORDER_ID IS NULL.
@@ -482,7 +536,7 @@ router.patch('/cancelorder',(req,res)=>{
             }
             
             //SEND NOTIFICATIONS TO ADMIN
-            const sql4=`INSERT INTO admin_notifications(user_id,notification) VALUES(${req.body.user_id},'${req.body.username} has cancelled order ${req.body.order_id}')`
+            const sql4=`INSERT INTO admin_notifications(user_id,notification) VALUES(${req.body.user_id},'${req.body.username} has cancelled order #bw_${req.body.order_id}')`
 
             conn.query(sql4,(err,results4)=>{
                 if(err){

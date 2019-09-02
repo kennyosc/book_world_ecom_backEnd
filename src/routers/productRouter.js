@@ -141,7 +141,10 @@ router.post('/addproduct',upload_productImage.single('productImage'),(req,res)=>
 
 //GET ALL PRODUCTS
 router.get('/allproducts', (req,res)=>{
-    const sql = `SELECT * FROM products ORDER BY created_at DESC`
+    const sql = `SELECT * FROM products
+        INNER JOIN product_categories
+        ON product_categories.product_id = products.id
+        ORDER BY products.created_at DESC`
     conn.query(sql,(err,results)=>{
         if(err){
             return res.send(err)
@@ -176,7 +179,7 @@ router.get('/newproducts',(req,res)=>{
 //GET 3 PRODUCTS FOR BEST SELLERS
 router.get('/bestsellers',(req,res)=>{
     const sql=`SELECT SUM(quantity) as quantity_sold,order_details.order_id, product_id, products.photo,
-                products.name, products.description from order_details
+                products.name, products.description, products.price,products.id from order_details
                 INNER JOIN products
                 ON order_details.product_id = products.id
                 group by product_id
@@ -417,11 +420,11 @@ router.patch('/editproduct/:product_id', (req,res)=>{
             category_id : data.category_id,
             genre_id : data.genre_id
         }
-        conn.query(sql2, productCategoriesData, (err,results)=>{
+        conn.query(sql2, productCategoriesData, (err,results2)=>{
             if(err){
                 return res.send(err)
             }
-            res.send(results)
+            res.send(results2)
         })
     })
 })

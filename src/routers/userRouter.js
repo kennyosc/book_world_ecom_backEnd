@@ -124,7 +124,7 @@ router.post('/register',(req,res)=>{
 
     //ubah password jadi hash
     if(data.password.length < 8){
-        return res.send('Password must be >= 8 characters')
+        return res.send('Password must be minimum 8 characters')
     } else{
         data.password = bcrypt.hashSync(data.password, 8)
     }
@@ -253,6 +253,11 @@ router.patch('/updatepassword/:id', (req,res)=>{
         if(err){
             return res.send('Password Incorrect')
         }
+
+        if(data.oldPassword.length < 8){
+            return res.send('Password must be minimum 8 characters')
+        }
+        
         const data = req.body
         
         const verifyPassword = bcrypt.compare(data.oldPassword,results[0].password)

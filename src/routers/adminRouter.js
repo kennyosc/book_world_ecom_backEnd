@@ -124,7 +124,7 @@ router.patch('/acceptuserpayment',(req,res)=>{
 
         const sql2 = `INSERT INTO user_notifications (user_id, notification)
                         VALUES (${req.body.user_id}, 
-                        'Your payment has been accepted on order ${req.body.id}')`
+                        'Your payment has been accepted on order #bw_${req.body.id}')`
         conn.query(sql2,(err,results2)=>{
             if(err){
                 return res.send(err)
@@ -163,7 +163,7 @@ router.patch('/rejectuserpayment',(req,res)=>{
 
             const sql3 = `INSERT INTO user_notifications (user_id, notification)
                         VALUES (${req.body.user_id}, 
-                        'Your payment has been rejected on order ${req.body.id}')`
+                        'Your payment has been rejected on order #bw_${req.body.id}')`
 
             conn.query(sql3,(err,results3)=>{
                 if(err){
@@ -229,13 +229,10 @@ router.delete(`/deleteallnotification`,(req,res)=>{
 })
 
 //=================STATS=================
-router.get(`/totalsalesonemonth`,(req,res)=>{
+router.get(`/totalsales`,(req,res)=>{
     const sql = `SELECT SUM(total) as totalOrders
     FROM orders
-    WHERE
-        created_at >= DATE_FORMAT(CURRENT_DATE(), '%Y/%m/01 00:00:00')
-            AND created_at <= DATE_FORMAT(CURRENT_DATE(), '%Y/%m/31 23:59:59')
-            AND canceled != 1`
+    WHERE canceled = 0`
 
     conn.query(sql,(err,results)=>{
         if(err){
@@ -245,14 +242,11 @@ router.get(`/totalsalesonemonth`,(req,res)=>{
     })
 })
 
-router.get(`/totalbooksoldonemonth`,(req,res)=>{
+router.get(`/totalbooksold`,(req,res)=>{
     const sql = `SELECT SUM(quantity) as bookSold
     FROM order_details
     WHERE
-        created_at >= DATE_FORMAT(CURRENT_DATE(), '%Y/%m/01 00:00:00')
-            AND created_at <= DATE_FORMAT(CURRENT_DATE(), '%Y/%m/31 23:59:59')
-            AND order_id IS NOT NULL
-            AND cancelled != 1`
+        cancelled = 0`
 
     conn.query(sql,(err,results)=>{
         if(err){
